@@ -22,14 +22,13 @@ bl_info = {
     "category": "Generic",
 }
 
-from . import auto_load
-
-auto_load.init()
+from . import rig_adapt, Panels
 
 
 def register():
-    auto_load.register()
-
+    rig_adapt.register()
+    Panels.register()
 
 def unregister():
-    auto_load.unregister()
+    rig_adapt.unregister()
+    Panels.unregister()
