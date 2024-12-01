@@ -1,0 +1,17 @@
+{
+    "l hand" : 0.3,
+    "r hand" : 0.3,
+    "head" : "snap_to:face02",
+    "l toe0" : "move_y_axis:0.5",
+    "r toe0" : "move_y_axis:0.5",
+    "l finger02": 0.9,
+	"l finger12": 0.9,
+	"l finger22": 0.9,
+	"l finger32": 0.9,
+	"l finger42": 0.9,
+    "r finger02": 0.9,
+	"r finger12": 0.9,
+	"r finger22": 0.9,
+	"r finger32": 0.9,
+	"r finger42": 0.9
+}
