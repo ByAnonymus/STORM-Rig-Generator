@@ -29,14 +29,27 @@ def copy_bone_props(new_bone_name, old_bone, **kwargs):
         new_bone.tail[2] = new_bone.head[2]
         new_bone.length = -1 * old_bone.length
 def add_stretch(bone, bone_to_stetch_to, ):
+    bpy.ops.object.mode_set(mode='EDIT', toggle=False)
     pose_bones = bpy.context.active_object.pose.bones
     rest_length = bone.length
+    bone_name = bone.name
     bpy.ops.object.mode_set(mode='POSE', toggle=False)
-    pose_bones[bone.name].constraints.new('STRETCH_TO')
-    constraint = pose_bones[bone.name].constraints["Stretch To"]
+    constraint = pose_bones[bone_name].constraints.new('STRETCH_TO')
     constraint.target = bpy.context.active_object
     constraint.subtarget = bone_to_stetch_to
     constraint.rest_length = rest_length
+def add_copy_transforms(bone, bone_to_stetch_to, influence):
+    pose_bones = bpy.context.active_object.pose.bones
+    # rest_length = bone.length
+    bpy.ops.object.mode_set(mode='POSE', toggle=False)
+    pose_bones[bone.name].constraints.new('COPY_TRANSFORMS')
+    constraint = pose_bones[bone.name].constraints["Copy Transforms"]
+    constraint.target = bpy.context.active_object
+    constraint.subtarget = bone_to_stetch_to
+    constraint.target_space = 'LOCAL'
+    constraint.owner_space = 'LOCAL'
+    constraint.influence = influence
+
 def select_bone(bone):
     bone.select = True
     #bone.select_head = True
@@ -190,6 +203,15 @@ class STORM_Rig_Generator(bpy.types.Operator):
         copy_bone_props(new_bone_name="spine_TWEAK", old_bone=edit_bones["DEF_spine"], length = 0.276, set_as_parent = True, parent = "CHEST", bone_for_length = "DEF_pelvis")
         copy_bone_props(new_bone_name="spine_FK", old_bone=edit_bones["DEF_spine"], set_as_parent = True, parent = "spine_TWEAK")
         add_stretch(bone=edit_bones["DEF_pelvis"], bone_to_stetch_to="spine_TWEAK")
+        bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+        copy_bone_props(new_bone_name="MCH_chest", old_bone=edit_bones["DEF_spine"], set_as_parent = False, parent = "spine_FK", world_bone = True)
+        copy_bone_props(new_bone_name="spine1_TWEAK", old_bone=edit_bones["DEF_spine1"], length = 0.276, set_as_parent = True, parent = "MCH_chest", bone_for_length = "DEF_pelvis")
+        copy_bone_props(new_bone_name="spine1_FK", old_bone=edit_bones["DEF_spine1"], set_as_parent = True, parent = "spine1_TWEAK")
+        edit_bones["MCH_chest"].parent = edit_bones["spine_FK"]
+        add_copy_transforms(bone=edit_bones["MCH_chest"], bone_to_stetch_to="CHEST", influence=0.75)
+        bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+        add_stretch(bone=edit_bones["DEF_spine"], bone_to_stetch_to="spine1_TWEAK")
+        bpy.ops.object.mode_set(mode='EDIT', toggle=False)
         return {"FINISHED"}
 
 classes = [STORM_Adapt_Operator, STORM_Rig_Generator]
