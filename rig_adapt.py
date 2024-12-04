@@ -1,5 +1,42 @@
-import bpy, json, os, sys
+import bpy, json
 #  bpy.context.view_layer.objects.active = bpy.data.objects[bpy.context.scene.byanon_active_storm_armature.name]
+def copy_bone_props(new_bone_name, old_bone, **kwargs):
+    bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+    length = kwargs.get("length", None)
+    parent = kwargs.get("parent", None)
+    set_as_parent = kwargs.get("set_as_parent", False)
+    world_bone = kwargs.get("world_bone", False)
+    bone_for_length = kwargs.get("bone_for_length", None)
+    edit_bones = old_bone.id_data.edit_bones
+    new_bone = edit_bones.new(name=new_bone_name)
+    if world_bone == False:
+        new_bone.head = old_bone.head
+        new_bone.tail = old_bone.tail
+        new_bone.roll = old_bone.roll
+        if length != None:
+            if bone_for_length == None:
+                new_bone.length = old_bone.length * length
+            else:
+                new_bone.length = edit_bones[bone_for_length].length * length
+        if parent != None:
+            new_bone.parent = edit_bones[parent]
+        if set_as_parent == True:
+            old_bone.parent = new_bone
+    else:
+        new_bone.head = old_bone.tail
+        new_bone.roll = 0
+        new_bone.tail[0] = new_bone.head[0]
+        new_bone.tail[2] = new_bone.head[2]
+        new_bone.length = -1 * old_bone.length
+def add_stretch(bone, bone_to_stetch_to, ):
+    pose_bones = bpy.context.active_object.pose.bones
+    rest_length = bone.length
+    bpy.ops.object.mode_set(mode='POSE', toggle=False)
+    pose_bones[bone.name].constraints.new('STRETCH_TO')
+    constraint = pose_bones[bone.name].constraints["Stretch To"]
+    constraint.target = bpy.context.active_object
+    constraint.subtarget = bone_to_stetch_to
+    constraint.rest_length = rest_length
 def select_bone(bone):
     bone.select = True
     #bone.select_head = True
@@ -17,9 +54,9 @@ class STORM_Adapt_Operator(bpy.types.Operator):
     bl_description = "Adapt STORM Rig for animation"
     bl_options = {"UNDO"}
 
-    @classmethod
-    def poll(cls, context):
-        return True
+    #@classmethod
+    # def poll(cls, context):
+    #     return True
 
     def execute(self, context):
         context.view_layer.objects.active = None
@@ -76,8 +113,58 @@ class STORM_Adapt_Operator(bpy.types.Operator):
                     bone.name = bone.name.removeprefix("r ") + ".R"
                 bone.name = "DEF_" + bone.name
         bpy.ops.armature.calculate_roll(type='POS_X')
-
-        '''for bone in context.active_object.data.edit_bones:
+        bpy.ops.byanon.storm_rig_generator()
+        #bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+        '''context.view_layer.objects.active = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
+        bpy.data.objects[context.scene.byanon_active_storm_rig.name].select_set(True)
+        new_object.select_set(True)
+        bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+        for bone in context.active_object.data.edit_bones:
+            if bool(new_armature.bones.get(bone.name)) == True:
+                bone.head = new_armature.edit_bones[bone.name].head
+                bone.tail = new_armature.edit_bones[bone.name].tail
+                bone.roll = new_armature.edit_bones[bone.name].roll
+                if new_armature.edit_bones[bone.name].parent != None:
+                    #if bool(new_armature.bones.get([new_armature.edit_bones[bone.name].parent.name])):
+                    bone.parent = edit_bones[new_armature.edit_bones[bone.name].parent.name]
+        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+        context.view_layer.objects.active = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
+        bpy.data.objects[context.scene.byanon_active_storm_rig.name].select_set(True)
+        new_object.select_set(False)
+        bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+        edit_bones = context.active_object.data.edit_bones
+        for bone in context.active_object.data.edit_bones:
+            if "DEF_" not in bone.name and "bone_to_align_to" not in bone.keys():
+                if bool(context.active_object.data.bones.get("DEF_"+bone.name.removeprefix("MCH_").removeprefix("INT_").removeprefix("SWITCH_").removeprefix("TWEAK_").removeprefix("TWIST_").removeprefix("IK_"))) == True:
+                    bone.head = edit_bones["DEF_"+bone.name.removeprefix("MCH_").removeprefix("INT_").removeprefix("SWITCH_").removeprefix("TWEAK_").removeprefix("TWIST_").removeprefix("IK_")].head
+                    bone.tail = edit_bones["DEF_"+bone.name.removeprefix("MCH_").removeprefix("INT_").removeprefix("SWITCH_").removeprefix("TWEAK_").removeprefix("TWIST_").removeprefix("IK_")].tail
+                    bone.roll = edit_bones["DEF_"+bone.name.removeprefix("MCH_").removeprefix("INT_").removeprefix("SWITCH_").removeprefix("TWEAK_").removeprefix("TWIST_").removeprefix("IK_")].roll
+            elif "bone_to_align_to" in bone.keys():
+                if "world_space:" in bone["bone_to_align_to"]:
+                    bone.head[0] = edit_bones[bone["bone_to_align_to"].removeprefix("world_space:")].head[0]
+                    bone.head[2] = edit_bones[bone["bone_to_align_to"].removeprefix("world_space:")].head[2]
+                    bone.tail[0] = bone.head[0]
+                    bone.tail[2] = bone.head[2]
+                elif bone["bone_to_align_to"] == "parent":
+                    bone.head = bone.parent.head
+                    bone.tail = bone.parent.tail
+                    bone.roll = bone.parent.roll          
+                elif "only_length:" in bone["bone_to_align_to"]:
+                    for bone1 in edit_bones:
+                        bone1.select = False
+                        edit_bones.active = None
+                    select_bone(bone)
+                    edit_bones.active = bone
+                    bpy.ops.armature.align()
+                    deselect_bone(bone)
+                    bone.length = edit_bones[bone["bone_to_align_to"].removeprefix("only_length:")].length
+                else:
+                    bone.head = edit_bones[bone["bone_to_align_to"]].head
+                    bone.tail = edit_bones[bone["bone_to_align_to"]].tail
+                    bone.roll = edit_bones[bone["bone_to_align_to"]].roll
+                    if "length" in bone.keys():
+                        bone.length = bone.length* float(bone["length"])
+        for bone in context.active_object.data.edit_bones:
             if bone.parent != None:
                 if bone != bone_without_parent:
                     bone.parent.tail = bone.head
@@ -86,8 +173,26 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         #context.active_object.data.edit_bones["l forearm"].parent.tail = context.active_object.data.edit_bones["l forearm"].head
         return {"FINISHED"}
 
+class STORM_Rig_Generator(bpy.types.Operator):
+    bl_idname = "byanon.storm_rig_generator"
+    bl_label = ""
+    bl_description = ""
+    bl_options = {"UNDO"}
 
-classes = [STORM_Adapt_Operator]
+    # @classmethod
+    def execute(self, context):
+        # 0.276
+        edit_bones = context.active_object.data.edit_bones
+        copy_bone_props(new_bone_name="TORSO", old_bone=edit_bones["DEF_pelvis"], set_as_parent = False, parent = "DEF_trall", world_bone = True)
+        copy_bone_props(new_bone_name="CHEST", old_bone=edit_bones["TORSO"], set_as_parent = False, parent = "TORSO")
+        copy_bone_props(new_bone_name="HIPS", old_bone=edit_bones["TORSO"], set_as_parent = False, parent = "TORSO")
+        copy_bone_props(new_bone_name="pelvis_TWEAK", old_bone=edit_bones["DEF_pelvis"], length = 0.276, set_as_parent = True, parent = "HIPS")
+        copy_bone_props(new_bone_name="spine_TWEAK", old_bone=edit_bones["DEF_spine"], length = 0.276, set_as_parent = True, parent = "CHEST", bone_for_length = "DEF_pelvis")
+        copy_bone_props(new_bone_name="spine_FK", old_bone=edit_bones["DEF_spine"], set_as_parent = True, parent = "spine_TWEAK")
+        add_stretch(bone=edit_bones["DEF_pelvis"], bone_to_stetch_to="spine_TWEAK")
+        return {"FINISHED"}
+
+classes = [STORM_Adapt_Operator, STORM_Rig_Generator]
 
 def register():
     for i in classes:
