@@ -1,6 +1,5 @@
 import bpy, json, os, math
 from pathlib import Path
-from .rigi_all import rigi_all as rigi
 #  bpy.context.view_layer.objects.active = bpy.data.objects[bpy.context.scene.byanon_active_storm_armature.name]
 def add_driver_constraint(bone, name, index_num, var, prop):
     pose_bones = bpy.context.active_object.pose.bones
@@ -160,12 +159,11 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         new_armature.name = new_object.name
         new_object.data = new_armature
         new_armature.display_type = 'OCTAHEDRAL'
-        new_object.select_set(True);
         context.view_layer.objects.active = new_object
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
         PATH = Path(__file__).parent
         ParentDict = os.path.join(PATH, 'ParentDict.json')
-        '''with open(ParentDict, "r") as dictionary:
+        with open(ParentDict, "r") as dictionary:
             dictionary = json.load(dictionary)
             for parent_bone in dictionary.keys():
                 child_bone = dictionary[parent_bone]
@@ -208,10 +206,9 @@ class STORM_Adapt_Operator(bpy.types.Operator):
                 elif "r " in bone.name:
                     bone.name = bone.name.removeprefix("r ") + ".R"
                 bone.name = "DEF_" + bone.name
-        bpy.ops.armature.calculate_roll(type='POS_Z')'''
+        bpy.ops.armature.calculate_roll(type='POS_Z')
         bpy.ops.byanon.storm_rig_generator()
-
-        # bpy.ops.pose.rigify_generate()
+        
         #bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
         '''context.view_layer.objects.active = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
         bpy.data.objects[context.scene.byanon_active_storm_rig.name].select_set(True)
@@ -282,161 +279,116 @@ class STORM_Rig_Generator(bpy.types.Operator):
         # 0.276
         edit_bones = context.active_object.data.edit_bones
         pose_bones = context.active_object.pose.bones
-        bones = context.active_object.data.bones
-
+        # TORSO
+        copy_bone_props(new_bone_name="TORSO", old_bone=edit_bones["DEF_pelvis"], set_as_parent = False, parent = "DEF_trall", world_bone = True)
+        copy_bone_props(new_bone_name="CHEST", old_bone=edit_bones["TORSO"], set_as_parent = False, parent = "TORSO")
+        copy_bone_props(new_bone_name="HIPS", old_bone=edit_bones["TORSO"], set_as_parent = False, parent = "TORSO")
+        copy_bone_props(new_bone_name="pelvis_TWEAK", old_bone=edit_bones["DEF_pelvis"], length = 0.276, set_as_parent = True, parent = "HIPS")
+        copy_bone_props(new_bone_name="spine_TWEAK", old_bone=edit_bones["DEF_spine"], length = 0.276, set_as_parent = True, parent = "CHEST", bone_for_length = "DEF_pelvis")
+        copy_bone_props(new_bone_name="spine_FK", old_bone=edit_bones["DEF_spine"], set_as_parent = True, parent = "spine_TWEAK")
+        add_stretch(bone="DEF_pelvis", bone_to_stetch_to="spine_TWEAK")
+        bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+        copy_bone_props(new_bone_name="MCH_chest", old_bone=edit_bones["DEF_spine"], set_as_parent = False, parent = "spine_FK", world_bone = True)
+        copy_bone_props(new_bone_name="spine1_TWEAK", old_bone=edit_bones["DEF_spine1"], length = 0.276, set_as_parent = True, parent = "MCH_chest", bone_for_length = "DEF_pelvis")
+        copy_bone_props(new_bone_name="spine1_FK", old_bone=edit_bones["DEF_spine1"], set_as_parent = True, parent = "spine1_TWEAK")
+        edit_bones["MCH_chest"].parent = edit_bones["spine_FK"]
+        add_copy_transforms(bone="MCH_chest", bone_to_stetch_to="CHEST", influence=0.75, constraint_type='COPY_TRANSFORMS')
+        bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+        add_stretch(bone="DEF_spine", bone_to_stetch_to="spine1_TWEAK")
+        bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+        copy_bone_props(new_bone_name="neck_TWEAK", old_bone=edit_bones["DEF_neck"], length = 0.276, set_as_parent = True, parent = "MCH_chest", bone_for_length = "DEF_pelvis")
+        copy_bone_props(new_bone_name="MCH_neck_TWIST", old_bone=edit_bones["neck_TWEAK"], set_as_parent = True, parent = "spine1_FK")
+        copy_bone_props(new_bone_name="MCH_INT_neck", old_bone=edit_bones["DEF_neck"], set_as_parent = False, parent = "DEF_trall")
+        copy_bone_props(new_bone_name="neck", old_bone=edit_bones["neck_TWEAK"], set_as_parent = True, parent = "MCH_INT_neck", bone_for_length = "DEF_neck", length = 1)
+        copy_bone_props(new_bone_name="MCH_neck", old_bone=edit_bones["neck"], set_as_parent = True, parent = "spine1_FK")
+        add_copy_transforms(bone="MCH_neck_TWIST", bone_to_stetch_to="neck", influence=1, constraint_type='COPY_LOCATION', world = True)
+        add_copy_transforms(bone="MCH_neck_TWIST", bone_to_stetch_to="neck", influence=1, constraint_type='DAMPED_TRACK', world = True, head_tail = 1)
+        add_copy_transforms(bone="MCH_neck_TWIST", bone_to_stetch_to="neck", influence=1, constraint_type='COPY_SCALE', world = True)
         
-        bpy.ops.bfl.init()
-
-        bpy.ops.object.mode_set(mode="POSE")
-        context.scene.rigiall_props.fix_symmetry = False
-
-        ###############################
-        # FIX SYMMETRY
-        ###############################
-
-        for bone in pose_bones:
-            if bone.name.startswith("l "):
-                bone.name = bone.name.removeprefix("l ") + ".L"
-            elif bone.name.startswith("r "):
-                bone.name = bone.name.removeprefix("r ") + ".R"
-
-        ###############################
+        add_copy_transforms(bone="MCH_INT_neck", bone_to_stetch_to="MCH_neck", influence=1, constraint_type='COPY_LOCATION', world = True)
+        add_copy_transforms(bone="MCH_INT_neck", bone_to_stetch_to="MCH_neck", influence=1, constraint_type='COPY_SCALE', world = True)
+        add_copy_transforms(bone="MCH_INT_neck", bone_to_stetch_to="MCH_neck", influence=1, constraint_type='COPY_ROTATION', world = True)
+        bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+        copy_bone_props(new_bone_name="head_TWEAK", old_bone=edit_bones["DEF_head"], length = 0.276, set_as_parent = True, bone_for_length = "DEF_pelvis")
+        copy_bone_props(new_bone_name="MCH_INT_head", old_bone=edit_bones["DEF_head"], set_as_parent = False, parent = "DEF_trall")
+        copy_bone_props(new_bone_name="head", old_bone=edit_bones["head_TWEAK"], set_as_parent = True, parent = "MCH_INT_head", bone_for_length = "DEF_head", length = 1)
+        copy_bone_props(new_bone_name="MCH_head", old_bone=edit_bones["head"], set_as_parent = True, parent = "neck")
+        copy_bone_props(new_bone_name="head_TIP_TWEAK", old_bone=edit_bones["DEF_head"], length = 0.276, set_as_parent = False, bone_for_length = "DEF_pelvis", parent = "head_TWEAK", world_bone = True, align=True)
+        copy_bone_props(new_bone_name="Properties", old_bone=edit_bones["DEF_head"], set_as_parent = False, parent = "head_TWEAK", world_bone = True, align=True)
+        add_copy_transforms(bone="MCH_INT_head", bone_to_stetch_to="MCH_head", influence=1, constraint_type='COPY_LOCATION', world = True)
+        add_copy_transforms(bone="MCH_INT_head", bone_to_stetch_to="MCH_head", influence=1, constraint_type='COPY_SCALE', world = True)
+        add_copy_transforms(bone="MCH_INT_head", bone_to_stetch_to="MCH_head", influence=1, constraint_type='COPY_ROTATION', world = True)
+        add_stretch(bone="DEF_spine1", bone_to_stetch_to="neck_TWEAK")
+        add_copy_transforms(bone="DEF_neck", bone_to_stetch_to="head", influence=0.75, constraint_type='COPY_ROTATION', world = True)
+        add_stretch(bone="DEF_neck", bone_to_stetch_to="head_TWEAK")
+        add_stretch(bone="DEF_head", bone_to_stetch_to="head_TIP_TWEAK")
+        
         # ARMS
-        ###############################
-
-        bones["upperarm.L"].select = True
-        bones["forearm.L"].select = True
-        bones["hand.L"].select = True
-        bpy.ops.bfl.makearm(isLeft=True)
-        bpy.ops.bfl.adjustroll(roll=90)
-
-
-        bones["upperarm.L"].select = False
-        bones["forearm.L"].select = False
-        bones["hand.L"].select = False
-
-        bones["upperarm.R"].select = True
-        bones["forearm.R"].select = True
-        bones["hand.R"].select = True
-        bpy.ops.bfl.makearm(isLeft=False)
-        bpy.ops.bfl.adjustroll(roll=-90)
-
-        bones["upperarm.R"].select = False
-        bones["forearm.R"].select = False
-        bones["hand.R"].select = False
-
-        bpy.ops.object.mode_set(mode="EDIT")
-
-        edit_bones["hand.L"].align_orientation(edit_bones["forearm.L"])
-        edit_bones["hand.L"].length = edit_bones["forearm.L"].length/4
-
-        edit_bones["hand.R"].align_orientation(edit_bones["forearm.R"])
-        edit_bones["hand.R"].length = edit_bones["forearm.R"].length/4
-
-        bpy.ops.object.mode_set(mode="POSE")
-
-        ###############################
-        # FINGERS
-        ###############################
-
-        for i in range(5):
-            for j in range(3):
-                name = f"finger{i}"
-                if j != 0:
-                    name+=str(j)
-                bones[f"{name}.L"].select = True
-
-        bpy.ops.bfl.makefingers(isLeft=True)
-        bpy.ops.bfl.adjustroll(roll=180)
-
-        bpy.ops.object.mode_set(mode="EDIT")
-        for i in range(5):
-            edit_bones[f"finger{i}2.L"].align_orientation(edit_bones[f"finger{i}1.L"])
-            edit_bones[f"finger{i}2.L"].length = 0.9 * edit_bones[f"finger{i}1.L"].length
-
-        bpy.ops.object.mode_set(mode="POSE")
-
-        for bone in bones:
-            if bone.select == True:
-                bone.select = False
-        for i in range(5):
-            for j in range(3):
-                name = f"finger{i}"
-                if j != 0:
-                    name+=str(j)
-                bones[f"{name}.R"].select = True
-
-        bpy.ops.bfl.makefingers(isLeft=False)
-        bpy.ops.object.mode_set(mode="EDIT")
-        for i in range(5):
-            edit_bones[f"finger{i}2.R"].align_orientation(edit_bones[f"finger{i}1.R"])
-            edit_bones[f"finger{i}2.R"].length = 0.9 * edit_bones[f"finger{i}1.R"].length
-
-        bpy.ops.object.mode_set(mode="POSE")
-
-        for bone in bones:
-            if bone.select == True:
-                bone.select = False
-
-        ###############################
-        # LEGS
-        ###############################
-
-        bones["thigh.L"].select = True
-        bones["calf.L"].select = True
-        bones["foot.L"].select = True
-        bones["toe0.L"].select = True
-
-        bpy.ops.bfl.makeleg(isLeft=True)
-
-        bpy.ops.object.mode_set(mode="EDIT")
-
-        edit_bones["toe0.L"].align_orientation(edit_bones["foot.L"])
-        edit_bones["toe0.L"].tail.x = edit_bones["toe0.L"].head.x
-        edit_bones["toe0.L"].tail.z = edit_bones["toe0.L"].head.z
-        edit_bones["toe0.L"].length = edit_bones["foot.L"].length/2
+        bpy.ops.object.mode_set(mode='EDIT', toggle=False)
         
-        bpy.ops.armature.calculate_roll(type='POS_Z')
-
-        # length = (edit_bones["foot.L"].head.x-edit_bones["thigh.L"].head.x)**2+(edit_bones["foot.L"].head.z-edit_bones["thigh.L"].head.z)**2
-
-        new_bone = edit_bones.new("Bone")
-        new_bone.head = edit_bones["thigh.L"].head
-        new_bone.tail = edit_bones["calf.L"].tail
-        l = new_bone.length
-
-        new_bone.head = edit_bones["foot.L"].head
-        new_bone.tail = edit_bones["foot.L"].tail
-        new_bone.tail.y = new_bone.head.y
-
-        new_bone.length *= 1.4
-        l += new_bone.length
-
-        d = edit_bones["foot.L"].length/2.25
-
-        ang = math.atan((new_bone.head.x-new_bone.tail.x)/(new_bone.head.z-new_bone.tail.z))
-
-        edit_bones["heel.L"].head.x = new_bone.tail.x - d * math.cos(ang)
-        edit_bones["heel.L"].tail.x = new_bone.tail.x + d * math.cos(ang)
-
-        edit_bones["heel.L"].head.z = new_bone.tail.z + d * math.sin(ang)
-        edit_bones["heel.L"].tail.z = new_bone.tail.z - d * math.sin(ang)
-
-        edit_bones["heel.L"].head.y = edit_bones["foot.L"].length/2
-        edit_bones["heel.L"].tail.y = edit_bones["foot.L"].length/2
-
-        edit_bones.remove(new_bone)
+        copy_bone_props(new_bone_name="MCH_ARM_SOCKET.L", old_bone=edit_bones["DEF_clavicle.L"], set_as_parent = False, parent = "DEF_clavicle.L", world_bone = True)
+        copy_bone_props(new_bone_name="MCH_INT_ARM_SOCKET.L", old_bone=edit_bones["DEF_clavicle.L"], set_as_parent = False, parent = "DEF_trall", world_bone = True)
         
-        for bone in edit_bones:
-            if bone.select_head or bone.select_tail or bone.select:
-                bone.select = False
-                bone.select_head = False
-                bone.select_tail = False
+        copy_bone_props(new_bone_name="MCH_SWITCH_upperarm.L", old_bone=edit_bones["DEF_upperarm.L"], set_as_parent = False, parent="MCH_INT_ARM_SOCKET.L")
+        copy_bone_props(new_bone_name="ARM_POLE_TARGET.L", old_bone=edit_bones["DEF_upperarm.L"], set_as_parent = False, parent="DEF_trall", world_bone = True, length = 0.5, bone_for_length = "DEF_upperarm.L")
+        edit_bones["ARM_POLE_TARGET.L"].head[1] += edit_bones["DEF_upperarm.L"].length * 0.5
+        edit_bones["ARM_POLE_TARGET.L"].tail[1] += edit_bones["DEF_upperarm.L"].length * 0.5
+        copy_bone_props(new_bone_name="upperarm_TWEAK.L", old_bone=edit_bones["DEF_upperarm.L"], length = 0.276, set_as_parent = True, bone_for_length = "DEF_pelvis")
+        copy_bone_props(new_bone_name="MCH_upperarm_TWEAK.L", old_bone=edit_bones["upperarm_TWEAK.L"], set_as_parent = True, parent = "MCH_SWITCH_upperarm.L")
+        copy_bone_props(new_bone_name="upperarm_FK.L", old_bone=edit_bones["DEF_upperarm.L"], set_as_parent = False, parent="MCH_INT_ARM_SOCKET.L")
+        copy_bone_props(new_bone_name="MCH_IK_upperarm.L", old_bone=edit_bones["DEF_upperarm.L"], set_as_parent = False, parent="MCH_INT_ARM_SOCKET.L")
+        
+        copy_bone_props(new_bone_name="MCH_SWITCH_forearm.L", old_bone=edit_bones["DEF_forearm.L"], set_as_parent = False, parent="MCH_SWITCH_upperarm.L")
+        copy_bone_props(new_bone_name="forearm_TWEAK.L", old_bone=edit_bones["DEF_forearm.L"], length = 0.276, set_as_parent = True, bone_for_length = "DEF_pelvis")
+        copy_bone_props(new_bone_name="MCH_forearm_TWEAK.L", old_bone=edit_bones["forearm_TWEAK.L"], set_as_parent = True, parent = "MCH_SWITCH_forearm.L")
+        copy_bone_props(new_bone_name="forearm_FK.L", old_bone=edit_bones["DEF_forearm.L"], set_as_parent = False, parent="upperarm_FK.L")
+        copy_bone_props(new_bone_name="MCH_IK_forearm.L", old_bone=edit_bones["DEF_forearm.L"], set_as_parent = False, parent="MCH_IK_upperarm.L")
+        
+        copy_bone_props(new_bone_name="MCH_SWITCH_hand.L", old_bone=edit_bones["DEF_hand.L"], set_as_parent = False, parent="MCH_SWITCH_forearm.L")
+        copy_bone_props(new_bone_name="hand_TWEAK.L", old_bone=edit_bones["DEF_hand.L"], length = 0.276, set_as_parent = True, bone_for_length = "DEF_pelvis")
+        copy_bone_props(new_bone_name="MCH_hand_TWEAK.L", old_bone=edit_bones["hand_TWEAK.L"], set_as_parent = True, parent = "MCH_SWITCH_hand.L")
+        copy_bone_props(new_bone_name="hand_FK.L", old_bone=edit_bones["DEF_hand.L"], set_as_parent = False, parent="forearm_FK.L")
+        copy_bone_props(new_bone_name="hand_IK.L", old_bone=edit_bones["DEF_hand.L"], set_as_parent = False, parent="DEF_trall")
+        copy_bone_props(new_bone_name="hand_TIP_TWEAK.L", old_bone=edit_bones["DEF_hand.L"], length = 0.276, set_as_parent = False, bone_for_length = "DEF_pelvis", parent = "hand_TWEAK.L", world_bone = True, align=True)
+    
+        add_stretch(bone="DEF_upperarm.L", bone_to_stetch_to="forearm_TWEAK.L")
+        add_stretch(bone="DEF_forearm.L", bone_to_stetch_to="hand_TWEAK.L")
+        add_stretch(bone="DEF_hand.L", bone_to_stetch_to="hand_TIP_TWEAK.L")
+        pose_bones["Properties"]["arm_IK-FK.L"] = float(0)
+        add_copy_transforms(bone="MCH_SWITCH_upperarm.L", bone_to_stetch_to="MCH_IK_upperarm.L", influence=1, constraint_type='COPY_TRANSFORMS', world = True, name = "IK")
+        add_driver_constraint(bone="MCH_SWITCH_upperarm.L",name="IK",index_num=1, var="1-var",prop="arm_IK-FK.L")
+        add_copy_transforms(bone="MCH_SWITCH_upperarm.L", bone_to_stetch_to="upperarm_FK.L", influence=1, constraint_type='COPY_TRANSFORMS', world = True, name = "FK")
+        add_driver_constraint(bone="MCH_SWITCH_upperarm.L",name="FK",index_num=1, var="var",prop="arm_IK-FK.L")
+        
+        add_copy_transforms(bone="MCH_SWITCH_forearm.L", bone_to_stetch_to="MCH_IK_forearm.L", influence=1, constraint_type='COPY_TRANSFORMS', world = True, name = "IK")
+        add_driver_constraint(bone="MCH_SWITCH_forearm.L",name="IK",index_num=1, var="1-var",prop="arm_IK-FK.L")
+        add_copy_transforms(bone="MCH_SWITCH_forearm.L", bone_to_stetch_to="forearm_FK.L", influence=1, constraint_type='COPY_TRANSFORMS', world = True, name = "FK")
+        add_driver_constraint(bone="MCH_SWITCH_forearm.L",name="FK",index_num=1, var="var",prop="arm_IK-FK.L")
+        
+        add_copy_transforms(bone="MCH_SWITCH_hand.L", bone_to_stetch_to="hand_IK.L", influence=1, constraint_type='COPY_TRANSFORMS', world = True, name = "IK")
+        add_driver_constraint(bone="MCH_SWITCH_hand.L",name="IK",index_num=1, var="1-var",prop="arm_IK-FK.L")
+        add_copy_transforms(bone="MCH_SWITCH_hand.L", bone_to_stetch_to="hand_FK.L", influence=1, constraint_type='COPY_TRANSFORMS', world = True, name = "FK")
+        add_driver_constraint(bone="MCH_SWITCH_hand.L",name="FK",index_num=1, var="var",prop="arm_IK-FK.L")
+        add_copy_transforms(bone="MCH_INT_head", bone_to_stetch_to="MCH_head", influence=1, constraint_type='COPY_SCALE', world = True)
+        add_copy_transforms(bone="MCH_INT_head", bone_to_stetch_to="MCH_head", influence=1, constraint_type='COPY_ROTATION', world = True)
 
-        edit_bones["heel.L"].select = True
-        bpy.ops.armature.calculate_roll(type='GLOBAL_POS_X')
-        edit_bones["heel.L"].select = False
+        add_copy_transforms(bone="MCH_INT_ARM_SOCKET.L", bone_to_stetch_to="MCH_ARM_SOCKET.L", influence=1, constraint_type='COPY_LOCATION', world = True)
+        add_copy_transforms(bone="MCH_INT_ARM_SOCKET.L", bone_to_stetch_to="MCH_ARM_SOCKET.L", influence=1, constraint_type='COPY_SCALE', world = True)
+        add_copy_transforms(bone="MCH_INT_ARM_SOCKET.L", bone_to_stetch_to="MCH_ARM_SOCKET.L", influence=1, constraint_type='COPY_ROTATION', world = True)
+        pose_bones["Properties"]["arm_FK_ROT_follow.L"] = float(1)
+        add_driver_constraint(bone="MCH_INT_ARM_SOCKET.L",name="COPY_ROTATION",index_num=1, var="var",prop="arm_FK_ROT_follow.L")
 
+        
+        create_ik_constraint_on_active("MCH_IK_forearm.L", "hand_IK.L", chain_length=2, pole="ARM_POLE_TARGET.L")
+        # add_copy_transforms(bone="MCH_IK_forearm.L", bone_to_stetch_to="hand_IK.L", influence=1, constraint_type="IK", chain=2)
+        pose_bones["MCH_IK_forearm.L"].lock_ik_x = True
+        pose_bones["MCH_IK_forearm.L"].constraints["IK"].pole_angle = 1.5708
+        pose_bones["MCH_IK_forearm.L"].lock_ik_y = True
+        pose_bones["MCH_IK_forearm.L"].ik_stretch = 0.01
+        pose_bones["MCH_IK_upperarm.L"].ik_stretch = 0.01
+        
+
+        # Leg
         
 
         return {"FINISHED"}

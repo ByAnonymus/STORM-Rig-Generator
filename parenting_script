@@ -1,0 +1,21 @@
+import bpy
+list = []
+bpy.ops.object.mode_set(mode='POSE')
+for i in bpy.context.active_object.data.bones:
+    if i.layers[0]:
+        list.append(i.name)
+print(list)
+for i in list:
+    bpy.ops.object.mode_set(mode='EDIT')
+    if "r " in i:
+        parent_bone = "DEF-"+i.removeprefix("r ").removesuffix(".001") + ".R"
+        if bool(bpy.context.active_object.data.edit_bones.get(parent_bone)) == False:
+            parent_bone = "DEF-"+i.removesuffix(".001")
+    elif "l " in i:
+        parent_bone = "DEF-"+i.removeprefix("l ").removesuffix(".001") + ".L"
+        if bool(bpy.context.active_object.data.edit_bones.get(parent_bone)) == False:
+            parent_bone = "DEF-"+i.removesuffix(".001")
+    else:
+        parent_bone = "DEF-"+i.removesuffix(".001")
+    if bpy.context.active_object.data.edit_bones.get(parent_bone):
+        bpy.context.active_object.data.edit_bones[i].parent = bpy.context.active_object.data.edit_bones[parent_bone]
