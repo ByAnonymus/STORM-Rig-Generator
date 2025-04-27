@@ -494,7 +494,17 @@ class STORM_Rig_Generator(bpy.types.Operator):
         bpy.ops.armature.calculate_roll(type='GLOBAL_POS_X')
         edit_bones["heel.R"].select = False
 
-        
+        ####################
+        # SPINE
+        ####################
+
+        edit_bones.remove(bones["pelvis"].parent.name)
+        edit_bones.remove("trall")
+        bpy.ops.object.mode_set(mode="POSE")
+        bone["pelvis"].select = True
+        bone["spine"].select = True
+        bone["spine1"].select = True
+        bpy.ops.bfl.makespine()
 
         return {"FINISHED"}
 
