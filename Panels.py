@@ -1,5 +1,5 @@
 import bpy
-#from . import rig_adapt
+from . import rig_adapt
 
 class STORM_Adapter_Panel(bpy.types.Panel):
     """Creates a Panel in the scene context of the properties editor"""
@@ -16,6 +16,8 @@ class STORM_Adapter_Panel(bpy.types.Panel):
         layout.prop(scene, "byanon_active_storm_armature")
         layout.prop(scene, "byanon_active_storm_rig")
         layout.operator("byanon.storm_rig_adapter")
+        layout.operator("byanon.storm_rig_bonemerge")
+
 
 classes = [STORM_Adapter_Panel]
 
@@ -38,3 +40,4 @@ def unregister():
     for i in classes:
         bpy.utils.unregister_class(i)
     del bpy.types.Scene.byanon_active_storm_armature
+    del bpy.types.Scene.byanon_active_storm_rig

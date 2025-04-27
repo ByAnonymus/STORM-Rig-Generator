@@ -398,6 +398,9 @@ class bfl_OT_makeExtras(ot):
             if bone.name in mod_bones: continue
             bone.bone.layers = [False if i != 24 else True for i in range(32)]
             bone.rigify_type = 'basic.super_copy'
+            bone.rigify_parameters.super_copy_widget_type = "sphere"
+            bone['extra'] = True
+            bone.bone['extra'] = True
         self.report({'INFO'}, 'Extra bones preserved! Select them and assign widgets in the bone tab!')
         return {'FINISHED'}
 
