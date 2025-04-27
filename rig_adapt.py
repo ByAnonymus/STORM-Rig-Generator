@@ -7,8 +7,12 @@ def set_parents():
     list = []
     bpy.ops.object.mode_set(mode='POSE')
     for i in bpy.context.active_object.data.bones:
-        if i.layers[0]:
-            list.append(i.name)
+        if bpy.app.version[0] < 4:
+            if i.layers[0]:
+                list.append(i.name)
+        else:
+            if i in bpy.context.active_object.data.collections["STORM"].bones:
+                list.append(i.name)
     for i in list:
         bpy.ops.object.mode_set(mode='EDIT')
         if "r " in i:
@@ -42,6 +46,10 @@ class STORM_Adapt_Operator(bpy.types.Operator):
 
     def execute(self, context):
         context.view_layer.objects.active = None
+        if bpy.app.version[0] > 3:
+            bpy.data.objects[context.scene.byanon_active_storm_armature.name].data.collections.new("STORM")
+            for bone in bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones:
+                bpy.data.objects[context.scene.byanon_active_storm_armature.name].data.collections["STORM"].assign(bone)
         for obj in context.view_layer.objects:
             obj.select_set(False)  # Deselect each object
         new_object = bpy.data.objects[context.scene.byanon_active_storm_armature.name].copy()

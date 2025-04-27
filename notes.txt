@@ -1,3 +1,0 @@
-l hand length = 3/10 of l forearm length
-bpy.ops.armature.calculate_roll(type='POS_X')
-1.24415 (head control)
