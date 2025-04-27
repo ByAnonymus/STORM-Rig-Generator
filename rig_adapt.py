@@ -1,3 +1,4 @@
+
 import bpy, json, os, math
 from pathlib import Path
 from .rigi_all import rigi_all as rigi
@@ -316,6 +317,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
         bones["hand.L"].select = False
 
         bones["upperarm.R"].select = True
+        
         bones["forearm.R"].select = True
         bones["hand.R"].select = True
         bpy.ops.bfl.makearm(isLeft=False)
@@ -436,6 +438,61 @@ class STORM_Rig_Generator(bpy.types.Operator):
         edit_bones["heel.L"].select = True
         bpy.ops.armature.calculate_roll(type='GLOBAL_POS_X')
         edit_bones["heel.L"].select = False
+
+        bones["thigh.R"].select = True
+        bones["calf.R"].select = True
+        bones["foot.R"].select = True
+        bones["toe0.R"].select = True
+
+        bpy.ops.bfl.makeleg(isLeft=True)
+
+        bpy.ops.object.mode_set(mode="EDIT")
+
+        edit_bones["toe0.R"].align_orientation(edit_bones["foot.R"])
+        edit_bones["toe0.R"].tail.x = edit_bones["toe0.R"].head.x
+        edit_bones["toe0.R"].tail.z = edit_bones["toe0.R"].head.z
+        edit_bones["toe0.R"].Rength = edit_bones["foot.R"].Rength/2
+        
+        bpy.ops.armature.calculate_roll(type='POS_Z')
+
+        # length = (edit_bones["foot.R"].head.x-edit_bones["thigh.R"].head.x)**2+(edit_bones["foot.R"].head.z-edit_bones["thigh.R"].head.z)**2
+
+        new_bone = edit_bones.new("Bone")
+        new_bone.head = edit_bones["thigh.R"].head
+        new_bone.tail = edit_bones["calf.R"].tail
+        l = new_bone.Rength
+
+        new_bone.head = edit_bones["foot.R"].head
+        new_bone.tail = edit_bones["foot.R"].tail
+        new_bone.tail.y = new_bone.head.y
+
+        new_bone.Rength *= 1.4
+        l += new_bone.Rength
+
+        d = edit_bones["foot.R"].Rength/2.25
+
+        ang = math.atan((new_bone.head.x-new_bone.tail.x)/(new_bone.head.z-new_bone.tail.z))
+
+        edit_bones["heel.R"].head.x = new_bone.tail.x - d * math.cos(ang)
+        edit_bones["heel.R"].tail.x = new_bone.tail.x + d * math.cos(ang)
+
+        edit_bones["heel.R"].head.z = new_bone.tail.z + d * math.sin(ang)
+        edit_bones["heel.R"].tail.z = new_bone.tail.z - d * math.sin(ang)
+
+        edit_bones["heel.R"].head.y = edit_bones["foot.R"].Rength/2
+        edit_bones["heel.R"].tail.y = edit_bones["foot.R"].Rength/2
+
+        edit_bones.remove(new_bone)
+        
+        for bone in edit_bones:
+            if bone.select_head or bone.select_tail or bone.select:
+                bone.select = False
+                bone.select_head = False
+                bone.select_tail = False
+
+        edit_bones["heel.R"].select = True
+        bpy.ops.armature.calculate_roll(type='GLOBAL_POS_X')
+        edit_bones["heel.R"].select = False
 
         
 
