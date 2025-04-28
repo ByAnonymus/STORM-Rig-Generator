@@ -52,6 +52,8 @@ class STORM_Adapt_Operator(bpy.types.Operator):
                 bpy.data.objects[context.scene.byanon_active_storm_armature.name].data.collections["STORM"].assign(bone)
         for obj in context.view_layer.objects:
             obj.select_set(False)  # Deselect each object
+        for bone in ["l hand", "r hand", "l foot", "r foot"]:
+            context.scene.byanon_active_storm_armature.bones[bone].inherit_scale = 'ALIGNED'
         new_object = bpy.data.objects[context.scene.byanon_active_storm_armature.name].copy()
         new_object.name = context.scene.byanon_active_storm_armature.name + "_RIG"
         context.collection.objects.link(new_object)
@@ -102,10 +104,10 @@ class STORM_Rig_Generator(bpy.types.Operator):
                 bone.select_head = False
                 bone.select_tail = False
         
-        edit_bones["l thigh"].parent = edit_bones["pelvis"]
+        '''edit_bones["l thigh"].parent = edit_bones["pelvis"]
         edit_bones["r thigh"].parent = edit_bones["pelvis"]
         edit_bones["l clavicle"].parent = edit_bones["spine1"]
-        edit_bones["r clavicle"].parent = edit_bones["spine1"]
+        edit_bones["r clavicle"].parent = edit_bones["spine1"]'''
 
         
         bpy.ops.bfl.init()
@@ -439,6 +441,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
             if "bone" in bone.name or bone.name.startswith("_"):
                 edit_bones[bone.name].parent = edit_bones["DEF"+bone.parent.name.removeprefix("ORG")] 
         bpy.ops.object.mode_set(mode="POSE")
+        pose_bones["MCH-pivot"].constraints["Copy Transforms"].influence = 0.0
         bones.id_data.name = bones.id_data.name.removesuffix("_RIG")
         context.active_object.name = bones.id_data.name
         context.scene.byanon_active_storm_rig = bones.id_data
