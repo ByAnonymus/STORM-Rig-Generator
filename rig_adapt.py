@@ -11,7 +11,7 @@ def set_parents():
             if i.layers[0]:
                 list.append(i.name)
         else:
-            if i in bpy.context.active_object.data.collections["STORM"].bones:
+            if i in bpy.context.active_object.data.collections["STORM"].bones_recursive:
                 list.append(i.name)
     for i in list:
         bpy.ops.object.mode_set(mode='EDIT')
@@ -52,8 +52,7 @@ class STORM_Adapt_Operator(bpy.types.Operator):
                 bpy.data.objects[context.scene.byanon_active_storm_armature.name].data.collections["STORM"].assign(bone)
         for obj in context.view_layer.objects:
             obj.select_set(False)  # Deselect each object
-        for bone in ["l hand", "r hand", "l foot", "r foot"]:
-            context.scene.byanon_active_storm_armature.bones[bone].inherit_scale = 'ALIGNED'
+        # for bone in ["l hand", "r hand", "l foot", "r foot"]:
         new_object = bpy.data.objects[context.scene.byanon_active_storm_armature.name].copy()
         new_object.name = context.scene.byanon_active_storm_armature.name + "_RIG"
         context.collection.objects.link(new_object)
@@ -82,6 +81,8 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         bpy.data.armatures.remove(new_armature)
         set_parents()
         bpy.ops.byanon.storm_rig_bonemerge()
+        for bone in context.scene.byanon_active_storm_armature.bones:
+            bone.inherit_scale = 'ALIGNED'
         #context.active_object.data.edit_bones["l forearm"].parent.tail = context.active_object.data.edit_bones["l forearm"].head
         return {"FINISHED"}
 
@@ -368,7 +369,10 @@ class STORM_Rig_Generator(bpy.types.Operator):
         bones["head"].select = False
         
         bones["clavicle.L"].select = True
+        bones.active = bones["clavicle.L"]
         bpy.ops.bfl.makeshoulder(isLeft=True)
+        bones.active = None
+        bones["clavicle.L"].select = False
 
         bpy.ops.object.mode_set(mode="EDIT")
         edit_bones["clavicle.L"].tail = edit_bones["upperarm.L"].head
@@ -376,7 +380,12 @@ class STORM_Rig_Generator(bpy.types.Operator):
         bpy.ops.object.mode_set(mode="POSE")
         
         bones["clavicle.R"].select = True
+        bones.active = bones["clavicle.R"]
         bpy.ops.bfl.makeshoulder(isLeft=False)
+
+        bones.active = None
+        bones["clavicle.R"].select = False
+
 
         bpy.ops.object.mode_set(mode="EDIT")
         edit_bones["clavicle.R"].tail = edit_bones["upperarm.R"].head
