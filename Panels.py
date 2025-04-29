@@ -17,6 +17,8 @@ class STORM_Adapter_Panel(bpy.types.Panel):
         layout.prop(scene, "byanon_active_storm_rig")
         layout.operator("byanon.storm_rig_adapter")
         layout.operator("byanon.storm_rig_bonemerge")
+        layout.operator("byanon.storm_rig_transfer")
+
 
 
 classes = [STORM_Adapter_Panel]

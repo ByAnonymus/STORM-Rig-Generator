@@ -33,7 +33,55 @@ def set_parents():
         if bpy.context.active_object.data.edit_bones.get(parent_bone):
             bpy.context.active_object.data.edit_bones[i].parent = bpy.context.active_object.data.edit_bones[parent_bone]
     bpy.ops.object.mode_set(mode='POSE')
+def bonemerge(i, obj, **kwargs):
+    loc = "BONEMERGE-ATTACH-LOC"
+    rot = "BONEMERGE-ATTACH-ROT"
+    scale = "BONEMERGE-ATTACH-SCALE"
+    only_1st_layer = kwargs.get("only_1_layer", False)
+    only_in_list = kwargs.get("only_in_list", False)
+    lst = ["hand_ik.L", "clavicle.L", "upperarm_ik.L", "thigh_ik.L", "foot_ik.L", "toe0_ik.L", "hand_ik.R", "clavicle.R", "upperarm_ik.R", "thigh_ik.R", "foot_ik.R", "toe0_ik.R", "head", "neck", "torso", "chest"]
+    subtarget_name = kwargs.get("subtarget", 0)
     
+    for ii in i.pose.bones:
+        if only_1st_layer:
+            if bpy.app.version[0]<4:
+                if i.data.bones[ii.name].layers[0]:
+                    proceed = True
+                else:
+                    proceed = False
+            else:
+                if ii in bpy.context.active_object.data.collections["STORM"].bones_recursive:
+                    proceed = True
+                else:
+                    proceed = False
+        elif only_in_list:
+            if ii.name in lst:
+                proceed = True
+            else:
+                proceed = False
+        else:
+            proceed = True
+        if not proceed:
+            continue
+        if subtarget_name == 1:
+            subtarget = ii.name.removesuffix(".001")
+        elif subtarget_name == 2:
+            subtarget = ii.name
+        else:
+            subtarget = ii.name + ".001"
+        if ii.constraints.get(loc) == None: # check if constraints already exist. if so, swap targets. if not, create constraints.
+            ii.constraints.new('COPY_SCALE').name = scale
+            ii.constraints.new('COPY_LOCATION').name = loc
+            ii.constraints.new('COPY_ROTATION').name = rot
+        LOC = ii.constraints[loc]
+        ROT = ii.constraints[rot]
+        LOC.target = obj
+        LOC.subtarget = subtarget
+        ROT.target = obj
+        ROT.subtarget = subtarget
+        SCALE = ii.constraints[scale]
+        SCALE.target = obj
+        SCALE.subtarget = subtarget 
 class STORM_Adapt_Operator(bpy.types.Operator):
     bl_idname = "byanon.storm_rig_adapter"
     bl_label = "STORM Rig Adapter"
@@ -105,10 +153,10 @@ class STORM_Rig_Generator(bpy.types.Operator):
                 bone.select_head = False
                 bone.select_tail = False
         
-        '''edit_bones["l thigh"].parent = edit_bones["pelvis"]
+        edit_bones["l thigh"].parent = edit_bones["pelvis"]
         edit_bones["r thigh"].parent = edit_bones["pelvis"]
         edit_bones["l clavicle"].parent = edit_bones["spine1"]
-        edit_bones["r clavicle"].parent = edit_bones["spine1"]'''
+        edit_bones["r clavicle"].parent = edit_bones["spine1"]
 
         
         bpy.ops.bfl.init()
@@ -459,35 +507,80 @@ class STORM_Rig_Generator(bpy.types.Operator):
 class STORM_Rig_Bonemerger(bpy.types.Operator):
     bl_idname = "byanon.storm_rig_bonemerge"
     bl_label = "Bonemerger"
-    bl_description = ""
+    bl_description = "Attach the STORM armature to the generated Rigify rig"
     bl_options = {"UNDO"}
 
     def execute(self, context):
-
-        loc = "BONEMERGE-ATTACH-LOC"
-        rot = "BONEMERGE-ATTACH-ROT"
-        scale = "BONEMERGE-ATTACH-SCALE"
         i = bpy.data.objects[context.scene.byanon_active_storm_armature.name]
         obj = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
+        bonemerge(i, obj)
 
-        for ii in i.pose.bones:
-            if ii.constraints.get(loc) == None: # check if constraints already exist. if so, swap targets. if not, create constraints.
-                ii.constraints.new('COPY_SCALE').name = scale
-                ii.constraints.new('COPY_LOCATION').name = loc
-                ii.constraints.new('COPY_ROTATION').name = rot
+        return {"FINISHED"}
+    
+class STORM_Rig_Transfer(bpy.types.Operator):
+    bl_idname = "byanon.storm_rig_transfer"
+    bl_label = "Animation transfer"
+    bl_description = "Applies animation from the basic STORM armature to the Rigify rig"
+    bl_options = {"UNDO"}
 
-            LOC = ii.constraints[loc]
-            ROT = ii.constraints[rot]
-            LOC.target = obj
-            LOC.subtarget = ii.name + ".001"
-            ROT.target = obj
-            ROT.subtarget = ii.name + ".001"
-            SCALE = ii.constraints[scale]
-            SCALE.target = obj
-            SCALE.subtarget = ii.name + ".001"
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    def execute(self, context):
+        storm_arm = context.scene.byanon_active_storm_armature
+        storm_rig = context.scene.byanon_active_storm_rig
+
+        new_object = bpy.data.objects[storm_rig.name].copy()
+        new_object.name = new_object.name.removesuffix(".001") + "_INT"
+        context.collection.objects.link(new_object)
+        new_armature = new_object.data.id_data.copy()
+        new_armature.name = new_object.name
+        new_object.data = new_armature
+        new_armature.display_type = 'OCTAHEDRAL'
+        new_object.select_set(True);
+        context.view_layer.objects.active = new_object
+        bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+
+        edit_bones = context.active_object.data.edit_bones
+        pose_bones = context.active_object.pose.bones
+        bones = context.active_object.data.bones
+
+        for bone in bones:
+            if bpy.app.version[0] < 4:
+                if bone.layers[0]:
+                    edit_bones[bone.name].parent = None
+            else:
+                if bone in bpy.context.active_object.data.collections["STORM"].bones_recursive:
+                    edit_bones[bone.name].parent = None
+
+        edit_bones["hand_ik.L"].parent = edit_bones["l hand.001"]
+        edit_bones["clavicle.L"].parent = edit_bones["l clavicle.001"]
+        edit_bones["upperarm_ik.L"].parent = edit_bones["l upperarm.001"]
+        edit_bones["thigh_ik.L"].parent = edit_bones["l thigh.001"]
+        edit_bones["foot_ik.L"].parent = edit_bones["l foot.001"]
+        edit_bones["toe0_ik.L"].parent = edit_bones["l toe0.001"]
+
+        edit_bones["hand_ik.R"].parent = edit_bones["r hand.001"]
+        edit_bones["clavicle.R"].parent = edit_bones["r clavicle.001"]
+        edit_bones["upperarm_ik.R"].parent = edit_bones["r upperarm.001"]
+        edit_bones["thigh_ik.R"].parent = edit_bones["r thigh.001"]
+        edit_bones["foot_ik.R"].parent = edit_bones["r foot.001"]
+        edit_bones["toe0_ik.R"].parent = edit_bones["r toe0.001"]
+
+        edit_bones["head"].parent = edit_bones["head.001"]
+        edit_bones["neck"].parent = edit_bones["neck.001"]
+        edit_bones["torso"].parent = edit_bones["pelvis.001"]
+        edit_bones["chest"].parent = edit_bones["spine1.001"]
+
+        bonemerge(context.active_object, bpy.data.objects[storm_arm.name], subtarget = 1, only_1_layer = True)
+
+        bonemerge(bpy.data.objects[storm_rig.name], context.active_object, subtarget = 2, only_in_list = True)
+
+
         return {"FINISHED"}
 
-classes = [STORM_Adapt_Operator, STORM_Rig_Generator, STORM_Rig_Bonemerger]
+classes = [STORM_Adapt_Operator, STORM_Rig_Generator, STORM_Rig_Bonemerger, STORM_Rig_Transfer]
 
 def register():
     for i in classes:
