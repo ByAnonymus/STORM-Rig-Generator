@@ -114,13 +114,13 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         PATH = Path(__file__).parent
         ParentDict = os.path.join(PATH, 'ParentDict.json')
         bpy.ops.byanon.storm_rig_generator()
-        bpy.data.objects.remove(new_object)
-        bpy.data.armatures.remove(new_armature)
+        # bpy.data.objects.remove(new_object)
+        # bpy.data.armatures.remove(new_armature)
 
         new_object = bpy.data.objects[context.scene.byanon_active_storm_armature.name].copy()
         context.collection.objects.link(new_object)
         new_armature = new_object.data.id_data.copy()
-        new_object.data = new_armature
+        new_object.data = new_armature 
         for bone in new_object.pose.bones:
             bone.name += ".001"
 
@@ -311,7 +311,9 @@ class STORM_Rig_Generator(bpy.types.Operator):
         edit_bones["heel.L"].select = True
         bpy.ops.armature.calculate_roll(type='GLOBAL_POS_X')
         edit_bones["heel.L"].select = False
-        
+        edit_bones["thigh.L"].roll = math.radians(-10)
+
+        edit_bones["calf.L"].align_orientation(edit_bones["thigh.L"])
         bpy.ops.object.mode_set(mode="POSE")
 
 
@@ -369,27 +371,43 @@ class STORM_Rig_Generator(bpy.types.Operator):
         edit_bones["heel.R"].select = True
         bpy.ops.armature.calculate_roll(type='GLOBAL_POS_X')
         edit_bones["heel.R"].select = False
+        edit_bones["thigh.R"].roll = math.radians(10)
+
+        edit_bones["calf.R"].align_orientation(edit_bones["thigh.R"])
+
 
         ###############################
         # SPINE
         ###############################
 
-        edit_bones.remove(edit_bones["pelvis"].parent)
+        # edit_bones.remove(edit_bones["pelvis"].parent)
+        parent = bones["pelvis"].parent
         edit_bones.remove(edit_bones["trall"])
-        bpy.ops.object.mode_set(mode="POSE")
+        edit_bones[parent.name].head = edit_bones["pelvis"].tail
 
+        
+        parent_name = parent.name
+        print("done 00t0")
+
+        bpy.ops.object.mode_set(mode="POSE")
+        bones[parent_name].select = True
         bones["pelvis"].select = True
         bones["spine"].select = True
         bones["spine1"].select = True
-        bpy.ops.bfl.makespine()
 
+        bpy.ops.bfl.makespine()
         bpy.ops.object.mode_set(mode="EDIT")
+
         edit_bones["spine1"].align_orientation(edit_bones["spine"])
         edit_bones["spine1"].tail = edit_bones["neck"].head
+        bpy.ops.armature.calculate_roll(type='GLOBAL_POS_Z')
+        bones["spine"].select = False
+        bones["spine1"].select = False
+        
 
         bpy.ops.object.mode_set(mode="POSE")
 
-        bpy.ops.bfl.adjustroll(roll=90)
+        # bpy.ops.bfl.adjustroll(roll=90)
 
         ###############################
         # NECK/HEAD
@@ -474,6 +492,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
         edit_bones["MCH-toe0_fk.L"].roll = ang
         edit_bones["foot_spin_ik.L"].roll = -ang
         edit_bones["MCH-heel_roll1.L"].roll = -ang
+        edit_bones["foot_tweak.L"].roll = -ang
 
         edit_bones["foot_heel_ik.R"].roll = ang
         edit_bones["foot_ik.R"].roll = ang
@@ -493,6 +512,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
         edit_bones["MCH-toe0_fk.R"].roll = -ang
         edit_bones["foot_spin_ik.R"].roll = ang
         edit_bones["MCH-heel_roll1.R"].roll = ang
+        edit_bones["foot_tweak.R"].roll = ang
 
         for bone in bones:
             if "bone" in bone.name or bone.name.startswith("_"):
@@ -541,10 +561,17 @@ class STORM_Rig_Transfer(bpy.types.Operator):
         new_object.select_set(True);
         context.view_layer.objects.active = new_object
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
-
+        new_armature.animation_data.action = None
+        new_armature.animation_data_clear()
         edit_bones = context.active_object.data.edit_bones
         pose_bones = context.active_object.pose.bones
         bones = context.active_object.data.bones
+
+        for bone in pose_bones:
+            bone.location.zero()
+            bone.rotation_euler.zero()
+            bone.rotation_quaternion = (1,0,0,0)
+            bone.scale = (1,1,1)
 
         for bone in bones:
             if bpy.app.version[0] < 4:
@@ -571,16 +598,50 @@ class STORM_Rig_Transfer(bpy.types.Operator):
         edit_bones["head"].parent = edit_bones["head.001"]
         edit_bones["neck"].parent = edit_bones["neck.001"]
         edit_bones["torso"].parent = edit_bones["pelvis.001"]
-        edit_bones["chest"].parent = edit_bones["spine1.001"]
+        edit_bones["spine1_fk"].parent = edit_bones["spine1.001"]
+        edit_bones["spine_fk"].parent = edit_bones["spine.001"]
+
+        for bone in bones:
+            if (pose_bones[bone.name].get("extra") or "finger" in bone.name) and "ORG" not in bone.name and "DEF" not in bone.name and ".001" not in bone.name:
+                if ".L" in bone.name:
+                    if bones.get("l " + bone.name.removesuffix(".L") +".001"):
+                        edit_bones[bone.name].parent = edit_bones["l " + bone.name.removesuffix(".L") +".001"]
+                elif ".R" in bone.name:
+                    if bones.get("r " + bone.name.removesuffix(".R") +".001"):
+                        edit_bones[bone.name].parent = edit_bones["r " + bone.name.removesuffix(".R") +".001"]
+                else:
+                    if bones.get(bone.name +".001"):
+                        edit_bones[bone.name].parent = edit_bones[bone.name +".001"]
+
+
+
 
         bonemerge(context.active_object, bpy.data.objects[storm_arm.name], subtarget = 1, only_1_layer = True)
 
-        bonemerge(bpy.data.objects[storm_rig.name], context.active_object, subtarget = 2, only_in_list = True)
+        bonemerge(bpy.data.objects[storm_rig.name], context.active_object, subtarget = 2)
 
 
         return {"FINISHED"}
 
-classes = [STORM_Adapt_Operator, STORM_Rig_Generator, STORM_Rig_Bonemerger, STORM_Rig_Transfer]
+class STORM_Rig_Unbonemerger(bpy.types.Operator):
+    bl_idname = "byanon.storm_rig_unbonemerger"
+    bl_label = "Unbonemerge"
+    bl_description = "Use this after baking the transferred animation on the Rigify rig, to remove unnecessary constraints on non-baked bones (Requiered)"
+    bl_options = {"UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    def execute(self, context):
+        for bone in bpy.context.active_object.pose.bones:
+            for i in bone.constraints:
+                if "BONEMERGE" in i.name:
+                    bone.constraints.remove(i)
+        return {"FINISHED"}
+
+
+classes = [STORM_Adapt_Operator, STORM_Rig_Generator, STORM_Rig_Bonemerger, STORM_Rig_Transfer, STORM_Rig_Unbonemerger]
 
 def register():
     for i in classes:
