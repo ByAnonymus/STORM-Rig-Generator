@@ -114,8 +114,8 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         PATH = Path(__file__).parent
         ParentDict = os.path.join(PATH, 'ParentDict.json')
         bpy.ops.byanon.storm_rig_generator()
-        # bpy.data.objects.remove(new_object)
-        # bpy.data.armatures.remove(new_armature)
+        bpy.data.objects.remove(new_object)
+        bpy.data.armatures.remove(new_armature)
 
         new_object = bpy.data.objects[context.scene.byanon_active_storm_armature.name].copy()
         context.collection.objects.link(new_object)
@@ -273,6 +273,12 @@ class STORM_Rig_Generator(bpy.types.Operator):
         
         bpy.ops.armature.calculate_roll(type='POS_Z')
 
+        bpy.ops.object.mode_set(mode="POSE")
+
+        bpy.ops.bfl.adjustroll(roll=90)
+
+        bpy.ops.object.mode_set(mode="EDIT")
+
         # length = (edit_bones["foot.L"].head.x-edit_bones["thigh.L"].head.x)**2+(edit_bones["foot.L"].head.z-edit_bones["thigh.L"].head.z)**2
 
         new_bone = edit_bones.new("Bone")
@@ -311,9 +317,9 @@ class STORM_Rig_Generator(bpy.types.Operator):
         edit_bones["heel.L"].select = True
         bpy.ops.armature.calculate_roll(type='GLOBAL_POS_X')
         edit_bones["heel.L"].select = False
-        edit_bones["thigh.L"].roll = math.radians(-10)
+        # edit_bones["thigh.L"].roll = math.radians(-10)
 
-        edit_bones["calf.L"].align_orientation(edit_bones["thigh.L"])
+        # edit_bones["calf.L"].align_orientation(edit_bones["thigh.L"])
         bpy.ops.object.mode_set(mode="POSE")
 
 
@@ -331,7 +337,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
         edit_bones["toe0.R"].tail.z = edit_bones["toe0.R"].head.z
         edit_bones["toe0.R"].length = edit_bones["foot.R"].length/2
         
-        bpy.ops.armature.calculate_roll(type='POS_Z')
+        # bpy.ops.armature.calculate_roll(type='POS_Z')
 
         # length = (edit_bones["foot.R"].head.x-edit_bones["thigh.R"].head.x)**2+(edit_bones["foot.R"].head.z-edit_bones["thigh.R"].head.z)**2
 
@@ -380,17 +386,13 @@ class STORM_Rig_Generator(bpy.types.Operator):
         # SPINE
         ###############################
 
-        # edit_bones.remove(edit_bones["pelvis"].parent)
+        edit_bones.remove(edit_bones["pelvis"].parent)
         parent = bones["pelvis"].parent
         edit_bones.remove(edit_bones["trall"])
-        edit_bones[parent.name].head = edit_bones["pelvis"].tail
-
-        
-        parent_name = parent.name
-        print("done 00t0")
+  
 
         bpy.ops.object.mode_set(mode="POSE")
-        bones[parent_name].select = True
+        # bones[parent_name].select = True
         bones["pelvis"].select = True
         bones["spine"].select = True
         bones["spine1"].select = True
@@ -460,11 +462,30 @@ class STORM_Rig_Generator(bpy.types.Operator):
         bpy.ops.bfl.extras()
 
         bpy.ops.object.mode_set(mode="EDIT")
+        for bone in bones:
+            if bone.name.endswith(".L"):
+                edit_bones[bone.name].select = True
+                edit_bones[bone.name].select_head = True
+                edit_bones[bone.name].select_tail = True
+
+
+                print(bone.name, " ", bone.select)
+        bpy.ops.armature.symmetrize(direction='NEGATIVE_X')
 
         for bone in bones:
             if bone.get('extra'):
                 edit_bones[bone.name].length *= 15
+        
+        for bone in bones:
+            if bone.name.endswith(".L"):
+                bone.select = True
+                print(bone.name, " ", bone.select)
+        bpy.ops.armature.symmetrize(direction='NEGATIVE_X')
+
         bpy.ops.object.mode_set(mode="POSE")
+
+
+
 
         bpy.ops.pose.rigify_generate()
 
@@ -476,6 +497,8 @@ class STORM_Rig_Generator(bpy.types.Operator):
 
         edit_bones["foot_heel_ik.L"].roll = -ang
         edit_bones["foot_ik.L"].roll = -ang
+        edit_bones["foot_fk.L"].roll = -ang
+
         edit_bones["foot_spin_ik.L"].roll = -ang
         edit_bones["toe0_ik.L"].roll = ang
         edit_bones["toe0_fk.L"].roll = ang
@@ -496,6 +519,8 @@ class STORM_Rig_Generator(bpy.types.Operator):
 
         edit_bones["foot_heel_ik.R"].roll = ang
         edit_bones["foot_ik.R"].roll = ang
+        edit_bones["foot_fk.R"].roll = ang
+
         edit_bones["foot_spin_ik.R"].roll = ang
         edit_bones["toe0_ik.R"].roll = -ang
         edit_bones["toe0_fk.R"].roll = -ang
@@ -518,6 +543,12 @@ class STORM_Rig_Generator(bpy.types.Operator):
             if "bone" in bone.name or bone.name.startswith("_"):
                 edit_bones[bone.name].parent = edit_bones["DEF"+bone.parent.name.removeprefix("ORG")] 
         bpy.ops.object.mode_set(mode="POSE")
+        pose_bones["MCH-calf_ik.L"].lock_ik_y = False
+        pose_bones["MCH-calf_ik.R"].lock_ik_y = False
+
+        pose_bones["MCH-forearm_ik.L"].lock_ik_y = False
+        pose_bones["MCH-forearm_ik.R"].lock_ik_y = False
+        
         pose_bones["MCH-pivot"].constraints["Copy Transforms"].influence = 0.0
         bones.id_data.name = bones.id_data.name.removesuffix("_RIG")
         context.active_object.name = bones.id_data.name
@@ -551,6 +582,8 @@ class STORM_Rig_Transfer(bpy.types.Operator):
         storm_arm = context.scene.byanon_active_storm_armature
         storm_rig = context.scene.byanon_active_storm_rig
 
+        bpy.data.objects[storm_rig.name].pose.bones["thigh_parent.L"]["IK_FK"] = 1.0
+        bpy.data.objects[storm_rig.name].pose.bones["thigh_parent.R"]["IK_FK"] = 1.0
         new_object = bpy.data.objects[storm_rig.name].copy()
         new_object.name = new_object.name.removesuffix(".001") + "_INT"
         context.collection.objects.link(new_object)
@@ -583,21 +616,31 @@ class STORM_Rig_Transfer(bpy.types.Operator):
 
         edit_bones["hand_ik.L"].parent = edit_bones["l hand.001"]
         edit_bones["clavicle.L"].parent = edit_bones["l clavicle.001"]
-        edit_bones["upperarm_ik.L"].parent = edit_bones["l upperarm.001"]
-        edit_bones["thigh_ik.L"].parent = edit_bones["l thigh.001"]
-        edit_bones["foot_ik.L"].parent = edit_bones["l foot.001"]
-        edit_bones["toe0_ik.L"].parent = edit_bones["l toe0.001"]
+        edit_bones["upperarm_fk.L"].parent = edit_bones["l upperarm.001"]
+        edit_bones["forearm_fk.L"].parent = edit_bones["l forearm.001"]
+        edit_bones["hand_fk.L"].parent = edit_bones["l hand.001"]
+
+
+        edit_bones["thigh_fk.L"].parent = edit_bones["l thigh.001"]
+        edit_bones["calf_fk.L"].parent = edit_bones["l calf.001"]
+        edit_bones["foot_fk.L"].parent = edit_bones["l foot.001"]
+        edit_bones["toe0_fk.L"].parent = edit_bones["l toe0.001"]
 
         edit_bones["hand_ik.R"].parent = edit_bones["r hand.001"]
         edit_bones["clavicle.R"].parent = edit_bones["r clavicle.001"]
         edit_bones["upperarm_ik.R"].parent = edit_bones["r upperarm.001"]
-        edit_bones["thigh_ik.R"].parent = edit_bones["r thigh.001"]
-        edit_bones["foot_ik.R"].parent = edit_bones["r foot.001"]
-        edit_bones["toe0_ik.R"].parent = edit_bones["r toe0.001"]
+        # edit_bones["thigh_ik_target.R"].parent = edit_bones["r calf.001"]
+        # edit_bones["foot_ik.R"].parent = edit_bones["r foot.001"]
+        # edit_bones["toe0_ik.R"].parent = edit_bones["r toe0.001"]
+
+        edit_bones["thigh_fk.R"].parent = edit_bones["r thigh.001"]
+        edit_bones["calf_fk.R"].parent = edit_bones["r calf.001"]
+        edit_bones["foot_fk.R"].parent = edit_bones["r foot.001"]
+        edit_bones["toe0_fk.R"].parent = edit_bones["r toe0.001"]
 
         edit_bones["head"].parent = edit_bones["head.001"]
         edit_bones["neck"].parent = edit_bones["neck.001"]
-        edit_bones["torso"].parent = edit_bones["pelvis.001"]
+        edit_bones["pelvis_fk"].parent = edit_bones["pelvis.001"]
         edit_bones["spine1_fk"].parent = edit_bones["spine1.001"]
         edit_bones["spine_fk"].parent = edit_bones["spine.001"]
 
