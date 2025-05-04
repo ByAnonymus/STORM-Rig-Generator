@@ -16,7 +16,7 @@ bl_info = {
     "author": "ByAnon",
     "description": "",
     "blender": (3, 4, 0),
-    "version": (0, 0, 1),
+    "version": (1, 2, 0),
     "location": "",
     "warning": "",
     "category": "Generic",
