@@ -18,6 +18,7 @@ class STORM_Adapter_Panel(bpy.types.Panel):
         layout.operator("byanon.storm_rig_adapter")
         layout.operator("byanon.storm_rig_bonemerge")
         layout.operator("byanon.storm_rig_transfer")
+        # layout.operator("byanon.storm_rig_bake")
         layout.operator("byanon.storm_rig_unbonemerger")
 
 
