@@ -25,9 +25,9 @@ def set_parents():
                 parent_bone = i.removeprefix("l ").removesuffix(".001")+".L"
         elif "toe0" in i:
             if "l " in i:
-                parent_bone = "ORG-"+i.removeprefix("l ") + ".L"
+                parent_bone = "ORG-"+i.removeprefix("l ").removesuffix(".001") + ".L"
             elif "r " in i:
-                parent_bone = "ORG-"+i.removeprefix("r ") + ".R"
+                parent_bone = "ORG-"+i.removeprefix("r ").removesuffix(".001") + ".R"
         elif i == "trall.001":
             parent_bone = "root"
         elif i.endswith("t0.001"):
