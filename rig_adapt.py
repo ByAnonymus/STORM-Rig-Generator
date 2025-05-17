@@ -121,8 +121,8 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         PATH = Path(__file__).parent
         ParentDict = os.path.join(PATH, 'ParentDict.json')
         bpy.ops.byanon.storm_rig_generator()
-        bpy.data.objects.remove(new_object)
-        bpy.data.armatures.remove(new_armature)
+        # bpy.data.objects.remove(new_object)
+        # bpy.data.armatures.remove(new_armature)
 
         new_object = bpy.data.objects[context.scene.byanon_active_storm_armature.name].copy()
         context.collection.objects.link(new_object)
@@ -412,17 +412,25 @@ class STORM_Rig_Generator(bpy.types.Operator):
         # SPINE
         ###############################
 
-        edit_bones.remove(edit_bones["pelvis"].parent)
         parent = bones["pelvis"].parent
+        if not context.scene.byanon_spine_toggle:
+            edit_bones.remove(edit_bones["pelvis"].parent)
+        else:
+            edit_bones[parent.name].head = edit_bones["pelvis"].tail
+
+        parent_name = parent.name
+        # print(parent_name)
         edit_bones.remove(edit_bones["trall"])
   
 
         bpy.ops.object.mode_set(mode="POSE")
-        # bones[parent_name].select = True
+        if context.scene.byanon_spine_toggle:
+            bones[parent_name].select = True
         bones["pelvis"].select = True
         bones["spine"].select = True
         bones["spine1"].select = True
 
+        print(context.selected_pose_bones)
         bpy.ops.bfl.makespine()
         bpy.ops.object.mode_set(mode="EDIT")
 
@@ -435,7 +443,8 @@ class STORM_Rig_Generator(bpy.types.Operator):
 
         bpy.ops.object.mode_set(mode="POSE")
 
-        # bpy.ops.bfl.adjustroll(roll=90)
+        # if context.scene.byanon_spine_toggle:
+            # bpy.ops.bfl.adjustroll(roll=90)
 
         ###############################
         # NECK/HEAD
@@ -591,8 +600,8 @@ class STORM_Rig_Generator(bpy.types.Operator):
 
         pose_bones["MCH-forearm_ik.L"].lock_ik_y = False
         pose_bones["MCH-forearm_ik.R"].lock_ik_y = False
-        
-        pose_bones["MCH-pivot"].constraints["Copy Transforms"].influence = 0.0
+        if not context.scene.byanon_spine_toggle:
+            pose_bones["MCH-pivot"].constraints["Copy Transforms"].influence = 0.0
         bones.id_data.name = bones.id_data.name.removesuffix("_RIG")
         context.active_object.name = bones.id_data.name
         context.scene.byanon_active_storm_rig = bones.id_data
