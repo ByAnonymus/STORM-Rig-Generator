@@ -13,6 +13,32 @@ def set_parents():
         else:
             if i in bpy.context.active_object.data.collections["STORM"].bones_recursive:
                 list.append(i.name)
+    for i in bpy.context.active_object.data.bones:
+        if bpy.app.version[0] < 4:
+            if i.layers[0]:
+                list.append(i.name)
+        else:
+            if i in bpy.context.active_object.data.collections["STORM"].bones_recursive:
+                list.append(i.name)
+    for i in list:
+        bpy.ops.object.mode_set(mode='EDIT')
+        if "r " in i:
+            parent_bone = "DEF-"+i.removeprefix("r ").removesuffix(".001") + ".R"
+            if bool(bpy.context.active_object.data.edit_bones.get(parent_bone)) == False:
+                parent_bone = "DEF-"+i.removesuffix(".001")
+        elif "l " in i:
+            parent_bone = "DEF-"+i.removeprefix("l ").removesuffix(".001") + ".L"
+            if bool(bpy.context.active_object.data.edit_bones.get(parent_bone)) == False:
+                parent_bone = "DEF-"+i.removesuffix(".001")
+        elif i == "trall.001":
+            parent_bone = "root"
+        elif i.endswith("t0.001"):
+            parent_bone = "trall.001"
+        else:
+            parent_bone = "DEF-"+i.removesuffix(".001")
+        if bpy.context.active_object.data.edit_bones.get(parent_bone):
+            bpy.context.active_object.data.edit_bones[i].parent = bpy.context.active_object.data.edit_bones[parent_bone]
+    
     for i in list:
         bpy.ops.object.mode_set(mode='EDIT')
         if "r " in i:
@@ -32,13 +58,15 @@ def set_parents():
             parent_bone = "root"
         elif i.endswith("t0.001"):
             parent_bone = "trall.001"
-
         else:
             parent_bone = "tweak_"+i.removesuffix(".001")
             if bool(bpy.context.active_object.data.edit_bones.get(parent_bone)) == False:
                 parent_bone = i.removesuffix(".001")
-        if bpy.context.active_object.data.edit_bones.get(parent_bone):
-            bpy.context.active_object.data.edit_bones[i].parent = bpy.context.active_object.data.edit_bones[parent_bone]
+        
+        con = bpy.context.active_object.pose.bones[i].constraints.new('COPY_SCALE')
+        con.name = "Copy Scale Parent"
+        con.target = bpy.context.active_object
+        con.subtarget = parent_bone
     bpy.ops.object.mode_set(mode='POSE')
 def bonemerge(i, obj, **kwargs):
     loc = "BONEMERGE-ATTACH-LOC"
@@ -121,8 +149,8 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         PATH = Path(__file__).parent
         ParentDict = os.path.join(PATH, 'ParentDict.json')
         bpy.ops.byanon.storm_rig_generator()
-        # bpy.data.objects.remove(new_object)
-        # bpy.data.armatures.remove(new_armature)
+        bpy.data.objects.remove(new_object)
+        bpy.data.armatures.remove(new_armature)
 
         new_object = bpy.data.objects[context.scene.byanon_active_storm_armature.name].copy()
         context.collection.objects.link(new_object)
@@ -159,6 +187,7 @@ class STORM_Adapt_Operator(bpy.types.Operator):
                     if bones.get(bone.parent.name.removeprefix("DEF-").removeprefix("ORG-") +".001"):
                         edit_bones[bone.name].parent = edit_bones[bone.parent.name.removeprefix("DEF-").removeprefix("ORG-") +".001"]
         #context.active_object.data.edit_bones["l forearm"].parent.tail = context.active_object.data.edit_bones["l forearm"].head
+        bpy.ops.object.mode_set(mode="POSE",toggle=False)
         return {"FINISHED"}
 
 class STORM_Rig_Generator(bpy.types.Operator):
@@ -600,8 +629,8 @@ class STORM_Rig_Generator(bpy.types.Operator):
 
         pose_bones["MCH-forearm_ik.L"].lock_ik_y = False
         pose_bones["MCH-forearm_ik.R"].lock_ik_y = False
-        if not context.scene.byanon_spine_toggle:
-            pose_bones["MCH-pivot"].constraints["Copy Transforms"].influence = 0.0
+        # if not context.scene.byanon_spine_toggle:
+        pose_bones["MCH-pivot"].constraints["Copy Transforms"].influence = 0.0
         bones.id_data.name = bones.id_data.name.removesuffix("_RIG")
         context.active_object.name = bones.id_data.name
         context.scene.byanon_active_storm_rig = bones.id_data

@@ -42,7 +42,7 @@ def register():
         description="Rig to adapt",
     )
     bpy.types.Scene.byanon_spine_toggle = bpy.props.BoolProperty(
-        name="Legacy Spine Control",
+        name="Legacy Spine Control (only for 3.6)",
         default=False
     )
 
