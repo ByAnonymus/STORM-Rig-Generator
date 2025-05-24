@@ -13,13 +13,6 @@ def set_parents():
         else:
             if i in bpy.context.active_object.data.collections["STORM"].bones_recursive:
                 list.append(i.name)
-    for i in bpy.context.active_object.data.bones:
-        if bpy.app.version[0] < 4:
-            if i.layers[0]:
-                list.append(i.name)
-        else:
-            if i in bpy.context.active_object.data.collections["STORM"].bones_recursive:
-                list.append(i.name)
     for i in list:
         bpy.ops.object.mode_set(mode='EDIT')
         if "r " in i:
@@ -664,10 +657,10 @@ class STORM_Rig_Transfer(bpy.types.Operator):
         storm_arm = context.scene.byanon_active_storm_armature
         storm_rig = context.scene.byanon_active_storm_rig
 
-        bpy.data.objects[storm_rig.name].pose.bones["thigh_parent.L"]["IK_FK"] = 1.0
-        bpy.data.objects[storm_rig.name].pose.bones["thigh_parent.R"]["IK_FK"] = 1.0
-        bpy.data.objects[storm_rig.name].pose.bones["upperarm_parent.L"]["IK_FK"] = 1.0
-        bpy.data.objects[storm_rig.name].pose.bones["upperarm_parent.R"]["IK_FK"] = 1.0
+        bpy.data.objects[storm_rig.name].pose.bones["thigh_parent.L"]["IK_FK"] = 0.0
+        bpy.data.objects[storm_rig.name].pose.bones["thigh_parent.R"]["IK_FK"] = 0.0
+        bpy.data.objects[storm_rig.name].pose.bones["upperarm_parent.L"]["IK_FK"] = 0.0
+        bpy.data.objects[storm_rig.name].pose.bones["upperarm_parent.R"]["IK_FK"] = 0.0
 
         new_object = bpy.data.objects[storm_rig.name].copy()
         new_object.name = new_object.name.removesuffix(".001") + "_INT"
@@ -684,6 +677,11 @@ class STORM_Rig_Transfer(bpy.types.Operator):
         edit_bones = context.active_object.data.edit_bones
         pose_bones = context.active_object.pose.bones
         bones = context.active_object.data.bones
+
+        pose_bones["thigh_parent.L"]["IK_FK"] = 1.0
+        pose_bones["thigh_parent.R"]["IK_FK"] = 1.0
+        pose_bones["upperarm_parent.L"]["IK_FK"] = 1.0
+        pose_bones["upperarm_parent.R"]["IK_FK"] = 1.0
 
         for bone in pose_bones:
             bone.location.zero()
@@ -703,11 +701,15 @@ class STORM_Rig_Transfer(bpy.types.Operator):
                     edit_bones[bone.name].parent = None
                     print(bone.name)
 
-
+        for bone in pose_bones:
+            for con in bone.constraints:
+                if con.name == "Copy Scale Parent":
+                    bone.constraints.remove(con)
         edit_bones["hand_ik.L"].parent = edit_bones["l hand.001"]
         edit_bones["clavicle.L"].parent = edit_bones["l clavicle.001"]
         edit_bones["upperarm_fk.L"].parent = edit_bones["l upperarm.001"]
         edit_bones["forearm_fk.L"].parent = edit_bones["l forearm.001"]
+        edit_bones["upperarm_ik_target.L"].parent = edit_bones["l forearm.001"]
         edit_bones["hand_fk.L"].parent = edit_bones["l hand.001"]
 
         edit_bones["thigh_fk.L"].parent = edit_bones["l thigh.001"]
@@ -716,6 +718,10 @@ class STORM_Rig_Transfer(bpy.types.Operator):
         edit_bones["foot_fk.L"].parent = edit_bones["l foot.001"]
         edit_bones["toe0_fk.L"].parent = edit_bones["l toe0.001"]
 
+        edit_bones["thigh_ik_target.L"].parent = edit_bones["l calf.001"]
+        edit_bones["foot_ik.L"].parent = edit_bones["l foot.001"]
+        edit_bones["toe0_ik.L"].parent = edit_bones["l toe0.001"]
+
         edit_bones["thigh_tweak.L"].parent = edit_bones["l thigh.001"]
         edit_bones["calf_tweak.L"].parent = edit_bones["l calf.001"]
         edit_bones["foot_tweak.L"].parent = edit_bones["l foot.001"]
@@ -723,12 +729,14 @@ class STORM_Rig_Transfer(bpy.types.Operator):
         edit_bones["clavicle.R"].parent = edit_bones["r clavicle.001"]
         edit_bones["upperarm_fk.R"].parent = edit_bones["r upperarm.001"]
         edit_bones["forearm_fk.R"].parent = edit_bones["r forearm.001"]
+        edit_bones["upperarm_ik_target.R"].parent = edit_bones["r forearm.001"]
+
         edit_bones["hand_fk.R"].parent = edit_bones["r hand.001"]
         edit_bones["hand_ik.R"].parent = edit_bones["r hand.001"]
 
-        # edit_bones["thigh_ik_target.R"].parent = edit_bones["r calf.001"]
-        # edit_bones["foot_ik.R"].parent = edit_bones["r foot.001"]
-        # edit_bones["toe0_ik.R"].parent = edit_bones["r toe0.001"]
+        edit_bones["thigh_ik_target.R"].parent = edit_bones["r calf.001"]
+        edit_bones["foot_ik.R"].parent = edit_bones["r foot.001"]
+        edit_bones["toe0_ik.R"].parent = edit_bones["r toe0.001"]
 
         edit_bones["thigh_fk.R"].parent = edit_bones["r thigh.001"]
         edit_bones["calf_fk.R"].parent = edit_bones["r calf.001"]
@@ -783,6 +791,14 @@ class STORM_Rig_Transfer(bpy.types.Operator):
         bonemerge(context.active_object, bpy.data.objects[storm_arm.name], subtarget = 1, only_1_layer = True)
 
         bonemerge(bpy.data.objects[storm_rig.name], context.active_object, subtarget = 2)
+
+
+    
+        bpy.data.objects[storm_rig.name].pose.bones["thigh_ik.L"].constraints.remove(bpy.data.objects[storm_rig.name].pose.bones["thigh_ik.L"].constraints["BONEMERGE-ATTACH-SCALE"])
+        bpy.data.objects[storm_rig.name].pose.bones["thigh_ik.R"].constraints.remove(bpy.data.objects[storm_rig.name].pose.bones["thigh_ik.R"].constraints["BONEMERGE-ATTACH-SCALE"])
+
+        bpy.data.objects[storm_rig.name].pose.bones["upperarm_ik.L"].constraints.remove(bpy.data.objects[storm_rig.name].pose.bones["upperarm_ik.L"].constraints["BONEMERGE-ATTACH-SCALE"])
+        bpy.data.objects[storm_rig.name].pose.bones["upperarm_ik.R"].constraints.remove(bpy.data.objects[storm_rig.name].pose.bones["upperarm_ik.R"].constraints["BONEMERGE-ATTACH-SCALE"])
 
 
         for bone in bpy.data.objects[storm_rig.name].pose.bones:
