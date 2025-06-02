@@ -486,7 +486,11 @@ class STORM_Rig_Generator(bpy.types.Operator):
         bpy.ops.bfl.makeneck()
 
         bpy.ops.object.mode_set(mode="EDIT")
-        edit_bones["head"].tail = edit_bones["face01"].head
+        if bones.get("face01"):
+            edit_bones["head"].tail = edit_bones["face01"].head
+        else:
+            edit_bones["head"].align_orientation(edit_bones["neck"])
+            edit_bones["head"].length = edit_bones["neck"].length/2
 
 
         bpy.ops.object.mode_set(mode="POSE")
