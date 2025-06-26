@@ -14,14 +14,9 @@ class STORM_Adapter_Panel(bpy.types.Panel):
         scene = context.scene
 
         layout.prop(scene, "byanon_active_storm_armature")
-        layout.prop(scene, "byanon_active_storm_rig")
-        layout.prop(scene, "byanon_spine_toggle")
 
-        layout.operator("byanon.storm_rig_adapter")
-        layout.operator("byanon.storm_rig_bonemerge")
-        layout.operator("byanon.storm_rig_transfer")
-        # layout.operator("byanon.storm_rig_bake")
-        layout.operator("byanon.storm_rig_unbonemerger")
+        layout.operator("byanon.storm_rig_face_generator")
+
 
 
 
