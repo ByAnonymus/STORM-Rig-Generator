@@ -142,8 +142,8 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         PATH = Path(__file__).parent
         ParentDict = os.path.join(PATH, 'ParentDict.json')
         bpy.ops.byanon.storm_rig_generator()
-        bpy.data.objects.remove(new_object)
-        bpy.data.armatures.remove(new_armature)
+        # bpy.data.objects.remove(new_object)
+        # bpy.data.armatures.remove(new_armature)
 
         new_object = bpy.data.objects[context.scene.byanon_active_storm_armature.name].copy()
         context.collection.objects.link(new_object)
@@ -523,12 +523,26 @@ class STORM_Rig_Generator(bpy.types.Operator):
         bpy.ops.bfl.extras()
 
         bpy.ops.object.mode_set(mode="EDIT")
+        edit_bones["finger0.L"].select = True
+        edit_bones["finger0.L"].select_head = True
+        edit_bones["finger0.L"].select_tail = True
+        edit_bones.active = edit_bones["finger0.L"]
+
+        bpy.ops.armature.calculate_roll(type='NEG_X')
+
+        edit_bones["finger01.L"].select = True
+        edit_bones["finger01.L"].select_head = True
+        edit_bones["finger01.L"].select_tail = True
+        edit_bones["finger02.L"].select = True
+        edit_bones["finger02.L"].select_head = True
+        edit_bones["finger02.L"].select_tail = True
+        bpy.ops.armature.calculate_roll(type='ACTIVE')
         for bone in bones:
             if bone.name.endswith(".L"):
                 edit_bones[bone.name].select = True
                 edit_bones[bone.name].select_head = True
                 edit_bones[bone.name].select_tail = True
-
+        
         for bone in bones:
             if bone.get('extra'):
                 edit_bones[bone.name].length *= 15
