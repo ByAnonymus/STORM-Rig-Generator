@@ -1,8 +1,19 @@
-
 import bpy, json, os, math
 from pathlib import Path
 # from .rigi_all import rigi_all as rigi
 #  bpy.context.view_layer.objects.active = bpy.data.objects[bpy.context.scene.byanon_active_storm_armature.name]
+def stretch_driver(driver, legs = False):
+    driver.type = 'SCRIPTED'
+    driver.expression = "1 if stretch != 0 else 0"
+    var = driver.variables.new()
+    var.name = "stretch"
+    var.type = "SINGLE_PROP"
+    var.targets[0].id_type = "OBJECT"
+    var.targets[0].id = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+    if legs:
+        var.targets[0].data_path = 'pose.bones["thigh_parent.L"]["IK_Stretch"]'
+    else:
+        var.targets[0].data_path = 'pose.bones["upperarm_parent.L"]["IK_Stretch"]'
 def set_parents():
     list = []
     bpy.ops.object.mode_set(mode='POSE')
@@ -142,8 +153,8 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         PATH = Path(__file__).parent
         ParentDict = os.path.join(PATH, 'ParentDict.json')
         bpy.ops.byanon.storm_rig_generator()
-        # bpy.data.objects.remove(new_object)
-        # bpy.data.armatures.remove(new_armature)
+        bpy.data.objects.remove(new_object)
+        bpy.data.armatures.remove(new_armature)
 
         new_object = bpy.data.objects[context.scene.byanon_active_storm_armature.name].copy()
         context.collection.objects.link(new_object)
@@ -268,7 +279,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
                 bones[f"{name}.L"].select = True
 
         bpy.ops.bfl.makefingers(isLeft=True)
-        bpy.ops.bfl.adjustroll(roll=0)
+        bpy.ops.bfl.adjustroll(roll=180)
 
         bpy.ops.object.mode_set(mode="EDIT")
         for i in range(5):
@@ -674,6 +685,29 @@ class STORM_Rig_Generator(bpy.types.Operator):
             bone.lock_rotation[1] = False
             bone.lock_rotation[2] = False
 
+        ###############################
+        # ARM IK FIX
+        ###############################
+        driver = pose_bones["MCH-forearm_ik.L"].constraints["IK"].driver_add("use_stretch").driver
+        stretch_driver(driver)
+        driver = pose_bones["MCH-forearm_ik.L"].constraints["IK.001"].driver_add("use_stretch").driver
+        stretch_driver(driver)
+        driver = pose_bones["MCH-forearm_ik.R"].constraints["IK"].driver_add("use_stretch").driver
+        stretch_driver(driver)
+        driver = pose_bones["MCH-forearm_ik.R"].constraints["IK.001"].driver_add("use_stretch").driver
+        stretch_driver(driver)
+
+        ###############################
+        # LEG IK FIX
+        ###############################
+        driver = pose_bones["MCH-calf_ik.L"].constraints["IK"].driver_add("use_stretch").driver
+        stretch_driver(driver, legs=True)
+        driver = pose_bones["MCH-calf_ik.L"].constraints["IK.001"].driver_add("use_stretch").driver
+        stretch_driver(driver, legs=True)
+        driver = pose_bones["MCH-calf_ik.R"].constraints["IK"].driver_add("use_stretch").driver
+        stretch_driver(driver, legs=True)
+        driver = pose_bones["MCH-calf_ik.R"].constraints["IK.001"].driver_add("use_stretch").driver
+        stretch_driver(driver, legs=True)
 
         return {"FINISHED"}
 
