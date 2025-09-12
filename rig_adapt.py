@@ -157,8 +157,6 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         bpy.data.armatures.remove(new_armature)
         set_parents()
         bpy.ops.byanon.storm_rig_bonemerge()
-        for bone in context.scene.byanon_active_storm_armature.bones:
-            bone.inherit_scale = 'ALIGNED'
         bones = context.scene.byanon_active_storm_rig.bones
         edit_bones = context.scene.byanon_active_storm_rig.edit_bones
         bpy.ops.object.mode_set(mode="EDIT", toggle=False)
@@ -261,7 +259,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
         ###############################
         # FINGERS
         ###############################
-
+        bpy.context.scene.rigiall_props.ik_fingers = True
         for i in range(5):
             for j in range(3):
                 name = f"finger{i}"
@@ -270,7 +268,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
                 bones[f"{name}.L"].select = True
 
         bpy.ops.bfl.makefingers(isLeft=True)
-        bpy.ops.bfl.adjustroll(roll=180)
+        bpy.ops.bfl.adjustroll(roll=0)
 
         bpy.ops.object.mode_set(mode="EDIT")
         for i in range(5):
@@ -646,6 +644,37 @@ class STORM_Rig_Generator(bpy.types.Operator):
         context.active_object.name = bones.id_data.name
         context.scene.byanon_active_storm_rig = bones.id_data
         
+
+        ###############################
+        # FINGERS
+        ###############################
+        for i in range(5):
+                name = f"ORG-finger{i}2.L"
+                bone = pose_bones.get(name)
+                if bone:
+                    bone.constraints["FingerIK"].use_rotation = True
+                    bone.ik_stiffness_x = 0.99
+                    name = f"ORG-finger{i}2.R"
+                    bone = pose_bones.get(name)
+                    bone.constraints["FingerIK"].use_rotation = True
+                    bone.ik_stiffness_x = 0.99
+
+        for i in range(5):
+            name = f"finger{i}_ik.L"
+            bone = pose_bones.get(name)
+            bone.lock_rotation_w = False
+            bone.lock_rotation[0] = False
+            bone.lock_rotation[1] = False
+            bone.lock_rotation[2] = False
+
+            name = f"finger{i}_ik.R"
+            bone = pose_bones.get(name)
+            bone.lock_rotation_w = False
+            bone.lock_rotation[0] = False
+            bone.lock_rotation[1] = False
+            bone.lock_rotation[2] = False
+
+
         return {"FINISHED"}
 
 class STORM_Rig_Bonemerger(bpy.types.Operator):
