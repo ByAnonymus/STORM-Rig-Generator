@@ -132,6 +132,9 @@ class STORM_Adapt_Operator(bpy.types.Operator):
     #     return True
 
     def execute(self, context):
+        context.scene.col_prop.collections = bpy.data.objects[context.scene.byanon_active_storm_armature.name].users_collection[0].name
+        context.scene.col_prop.armatures = context.scene.byanon_active_storm_armature.name
+        bpy.ops.object.remove_char_code()
         context.view_layer.objects.active = None
         if bpy.app.version[0] > 3:
             bpy.data.objects[context.scene.byanon_active_storm_armature.name].data.collections.new("STORM")
@@ -147,7 +150,7 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         new_armature.name = new_object.name
         new_object.data = new_armature
         new_armature.display_type = 'OCTAHEDRAL'
-        new_object.select_set(True);
+        new_object.select_set(True)
         context.view_layer.objects.active = new_object
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
         PATH = Path(__file__).parent
@@ -166,8 +169,8 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         new_object.select_set(True)
         bpy.ops.object.join()
         bpy.data.armatures.remove(new_armature)
-        set_parents()
-        bpy.ops.byanon.storm_rig_bonemerge()
+        # set_parents()
+        # bpy.ops.byanon.storm_rig_bonemerge()
         bones = context.scene.byanon_active_storm_rig.bones
         edit_bones = context.scene.byanon_active_storm_rig.edit_bones
         bpy.ops.object.mode_set(mode="EDIT", toggle=False)
@@ -189,6 +192,7 @@ class STORM_Adapt_Operator(bpy.types.Operator):
                     if bones.get(bone.parent.name.removeprefix("DEF-").removeprefix("ORG-") +".001"):
                         edit_bones[bone.name].parent = edit_bones[bone.parent.name.removeprefix("DEF-").removeprefix("ORG-") +".001"]
         #context.active_object.data.edit_bones["l forearm"].parent.tail = context.active_object.data.edit_bones["l forearm"].head
+        bpy.ops.byanon.face_rig_generator()
         bpy.ops.object.mode_set(mode="POSE",toggle=False)
         return {"FINISHED"}
 
@@ -708,6 +712,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
         stretch_driver(driver, legs=True)
         driver = pose_bones["MCH-calf_ik.R"].constraints["IK.001"].driver_add("use_stretch").driver
         stretch_driver(driver, legs=True)
+
 
         return {"FINISHED"}
 

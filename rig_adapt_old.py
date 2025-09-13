@@ -49,6 +49,9 @@ def copy_bone_props(new_bone_name, old_bone, **kwargs):
                 new_bone.length = old_bone.length * length
             else:
                 new_bone.length = edit_bones[bone_for_length].length * length
+    bpy.ops.object.mode_set(mode='POSE', toggle=False)
+    
+    return new_bone
 def add_stretch(bone, bone_to_stetch_to, ):
     bpy.ops.object.mode_set(mode='OBJECT')
     bpy.ops.object.mode_set(mode='EDIT', toggle=False)
@@ -129,8 +132,8 @@ def add_copy_transforms(bone, bone_to_stetch_to, influence, constraint_type, **k
         constraint.chain_count = chain
 def select_bone(bone):
     bone.select = True
-    #bone.select_head = True
-    #bone.select_tail = True
+    bone.select_head = True
+    bone.select_tail = True
     bone.id_data.edit_bones.active = bone
     print(f"selected {bone}")
 def deselect_bone(bone):
