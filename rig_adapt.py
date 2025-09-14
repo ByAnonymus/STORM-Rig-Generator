@@ -169,8 +169,8 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         new_object.select_set(True)
         bpy.ops.object.join()
         bpy.data.armatures.remove(new_armature)
-        # set_parents()
-        # bpy.ops.byanon.storm_rig_bonemerge()
+        set_parents()
+        bpy.ops.byanon.storm_rig_bonemerge()
         bones = context.scene.byanon_active_storm_rig.bones
         edit_bones = context.scene.byanon_active_storm_rig.edit_bones
         bpy.ops.object.mode_set(mode="EDIT", toggle=False)
