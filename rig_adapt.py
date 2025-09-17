@@ -132,6 +132,9 @@ class STORM_Adapt_Operator(bpy.types.Operator):
     #     return True
 
     def execute(self, context):
+        context.scene.col_prop.collections = bpy.data.objects[context.scene.byanon_active_storm_armature.name].users_collection[0].name
+        context.scene.col_prop.armatures = context.scene.byanon_active_storm_armature.name
+        bpy.ops.object.remove_char_code()
         context.view_layer.objects.active = None
         if bpy.app.version[0] > 3:
             bpy.data.objects[context.scene.byanon_active_storm_armature.name].data.collections.new("STORM")
@@ -709,6 +712,40 @@ class STORM_Rig_Generator(bpy.types.Operator):
         driver = pose_bones["MCH-calf_ik.R"].constraints["IK.001"].driver_add("use_stretch").driver
         stretch_driver(driver, legs=True)
 
+        constraints = pose_bones["MCH-toe0_ik_parent.L"].constraints
+        constraints.remove(constraints["Copy Transforms"])
+        const = constraints.new('COPY_ROTATION')
+        const.target = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
+        const.subtarget = "MCH-heel_roll1.L"
+        const.target_space = 'LOCAL_OWNER_ORIENT'
+        const.owner_space = 'LOCAL'
+
+        const = constraints.new('COPY_SCALE')
+        const.target = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
+        const.subtarget = "MCH-heel_roll1.L"
+
+        constraints = pose_bones["MCH-toe0_ik_parent.R"].constraints
+        constraints.remove(constraints["Copy Transforms"])
+        const = constraints.new('COPY_ROTATION')
+        const.target = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
+        const.subtarget = "MCH-heel_roll1.R"
+        const.target_space = 'LOCAL_OWNER_ORIENT'
+        const.owner_space = 'LOCAL'
+
+        const = constraints.new('COPY_SCALE')
+        const.target = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
+        const.subtarget = "MCH-heel_roll1.R"
+
+        bpy.ops.object.mode_set(mode='EDIT')
+
+        edit_bones["MCH-toe0_ik_parent.L"].parent = edit_bones["MCH-foot_tweak.L"]
+        edit_bones["MCH-toe0_ik_parent.L"].use_connect = False
+
+        edit_bones["MCH-toe0_ik_parent.R"].parent = edit_bones["MCH-foot_tweak.R"]
+        edit_bones["MCH-toe0_ik_parent.R"].use_connect = False
+
+
+        bpy.ops.object.mode_set(mode='POSE')
         return {"FINISHED"}
 
 class STORM_Rig_Bonemerger(bpy.types.Operator):
