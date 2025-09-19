@@ -735,6 +735,8 @@ class STORM_Rig_Generator(bpy.types.Operator):
         const = constraints.new('COPY_SCALE')
         const.target = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
         const.subtarget = "MCH-heel_roll1.R"
+        pose_bones["MCH-calf_ik.L"].ik_stiffness_x = .99
+        pose_bones["MCH-calf_ik.R"].ik_stiffness_x = .99
 
         bpy.ops.object.mode_set(mode='EDIT')
 
