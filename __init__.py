@@ -16,19 +16,21 @@ bl_info = {
     "author": "ByAnon",
     "description": "",
     "blender": (3, 4, 0),
-    "version": (1, 3, 0),
+    "version": (2, 0, 0),
     "location": "",
     "warning": "",
     "category": "Generic",
 }
 
-from . import rig_adapt, Panels
+from . import rig_adapt, Panels, cloudrig_operators
 
 
 def register():
     rig_adapt.register()
     Panels.register()
+    cloudrig_operators.register()
 
 def unregister():
     rig_adapt.unregister()
     Panels.unregister()
+    cloudrig_operators.unregister()
