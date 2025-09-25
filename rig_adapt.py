@@ -137,14 +137,17 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         context.view_layer.objects.active = old_obj
         bpy.ops.object.mode_set(mode="POSE")
         for bone in context.active_object.data.bones:
-            if bone.name not in {"pelvis", "spine"}:
+            if bone.name not in {"pelvis", "spine", "spine1"}:
                 bone.select = True
         bpy.ops.transform.bbone_resize(value=(.1, .1, .1))
         for bone in context.active_object.data.bones:
             bone.select = False
         context.active_object.data.bones["spine"].select = True
+        context.active_object.data.bones["spine1"].select = True
         bpy.ops.transform.bbone_resize(value=(.5, .5, .5))
         context.active_object.data.bones["spine"].select = False
+        context.active_object.data.bones["spine1"].select = False
+
         context.active_object.data.bones["pelvis"].select = True
         bpy.ops.transform.bbone_resize(value=(.25, .25, .25))
 
@@ -752,6 +755,15 @@ class STORM_Rig_Generator(bpy.types.Operator):
         # edit_bones["IK-M-finger42.L"].select = True
         bpy.ops.transform.translate(value=(0, 0, -0.00009), orient_type='NORMAL')
 
+        # bpy.ops.object.mode_set(mode="POSE")
+        # bones["pelvis"].name = "DEF-pelvis"
+        # bones["spine"].name = "DEF-spine"
+        # bones["spine1"].name = "DEF-spine1"
+
+        bpy.ops.byanon.storm_rig_spine_gen()
+        bpy.ops.object.mode_set(mode="EDIT")
+
+        # edit_bones["spine1"].parent = edit_bones["STR-spine1"]
         # for i in range(5):
         #         name = f"ORG-finger{i}2.L"
         #         bone = pose_bones.get(name)
@@ -838,6 +850,12 @@ class STORM_Rig_Generator(bpy.types.Operator):
 
 
         bpy.ops.object.mode_set(mode='POSE')
+        context.scene.byanon_active_storm_rig.display_type = "OCTAHEDRAL"
+        context.scene.byanon_active_storm_rig.collections_all["Mechanism Bones"].is_visible = False
+        context.scene.byanon_active_storm_rig.collections_all["Deform Bones"].is_visible = False
+        context.scene.byanon_active_storm_rig.collections_all["Original Bones"].is_visible = False
+
+        
         return {"FINISHED"}
 
 class STORM_Rig_Bonemerger(bpy.types.Operator):

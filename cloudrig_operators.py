@@ -77,16 +77,17 @@ class BFL_ByAnon_makeleg(bpy.types.Operator):
         heel.tail[0] = heel.head[0]+ (0.1 if self.isLeft else -0.1)
         heel.head[2] = 0
         heel.tail[2] = 0
-
         mode(mode="POSE")
+        heel_bone = obj.pose.bones['heel.L' if self.isLeft else 'heel.R']
         for bone in bones:
             mark(bone)
+        mark(heel_bone)
         bones[0].cloudrig_component.component_type = "Limb: Biped Leg"
         bones[0].cloudrig_component.params.fk_chain.root = True
         bones[0].cloudrig_component.params.fk_chain.hinge = True
         bones[0].cloudrig_component.params.leg.use_foot_roll = True
         bones[0].cloudrig_component.params.leg.heel_bone = 'heel.L' if self.isLeft else 'heel.R'
-            
+        
         return {"FINISHED"}
 
 class BFL_ByAnon_makespine(bpy.types.Operator):
@@ -112,14 +113,9 @@ class BFL_ByAnon_makespine(bpy.types.Operator):
         mode(mode="POSE")
         for bone in bones:
             mark(bone)
-        bones[0].cloudrig_component.component_type = "Spine: IK/FK"
-        bones[0].cloudrig_component.params.fk_chain.root = True
-        bones[0].cloudrig_component.params.fk_chain.hinge = False
-        bones[0].cloudrig_component.params.spine.use_ik = True
-        bones[0].cloudrig_component.params.spine.world_align = True
-        bones[0].cloudrig_component.params.fk_chain.position_along_bone = .5
-        bones[0].cloudrig_component.params.chain.tip_control = True
-        bones[0].cloudrig_component.params.chain.sharp = True
+        bones[0].cloudrig_component.component_type = "Bone Copy"
+        bones[0].cloudrig_component.params.copy.create_deform = True
+
         return {"FINISHED"}
         
 class BFL_ByAnon_makeshoulder(bpy.types.Operator):
