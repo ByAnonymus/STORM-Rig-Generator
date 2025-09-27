@@ -22,17 +22,17 @@ bl_info = {
     "category": "Generic",
 }
 
-from . import rig_adapt, Panels, cloudrig_operators, rig_adapt_spine
+from . import rig_adapt as rig_adapt, Panels, rigify_operators as rigify_operators, rig_adapt_spine
 
 
 def register():
     rig_adapt.register()
     Panels.register()
-    cloudrig_operators.register()
+    rigify_operators.register()
     rig_adapt_spine.register()
 
 def unregister():
     rig_adapt.unregister()
     Panels.unregister()
-    cloudrig_operators.unregister()
+    rigify_operators.unregister()
     rig_adapt_spine.unregister()

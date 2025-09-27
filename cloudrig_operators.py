@@ -42,6 +42,10 @@ class BFL_ByAnon_makearm(bpy.types.Operator):
         bones[0].cloudrig_component.component_type = "Limb: Generic"
         bones[0].cloudrig_component.params.fk_chain.root = True
         bones[0].cloudrig_component.params.fk_chain.hinge = True
+        
+        collections = obj.data.collections
+        collections.new("")
+
         return {"FINISHED"}
 
 class BFL_ByAnon_makeleg(bpy.types.Operator):
@@ -86,6 +90,7 @@ class BFL_ByAnon_makeleg(bpy.types.Operator):
         bones[0].cloudrig_component.params.fk_chain.root = True
         bones[0].cloudrig_component.params.fk_chain.hinge = True
         bones[0].cloudrig_component.params.leg.use_foot_roll = True
+        bones[0].cloudrig_component.params.ik_chain.world_aligned = True
         bones[0].cloudrig_component.params.leg.heel_bone = 'heel.L' if self.isLeft else 'heel.R'
         
         return {"FINISHED"}
@@ -227,8 +232,8 @@ class BFL_ByAnon_makeextras(bpy.types.Operator):
             # bone_col.assign(bone.bone)
             bone['extra'] = True
             bone.bone['extra'] = True
-            bone.cloudrig_component.component_type = "Bone Copy"
-            bone.cloudrig_component.params.copy.create_deform = True
+            bone.cloudrig_component.component_type = "Bone Tweak"
+            bone.cloudrig_component.params.copy.create_deform = False
             bone.cloudrig_component.params.copy.create_control = True
 
         return {"FINISHED"}
