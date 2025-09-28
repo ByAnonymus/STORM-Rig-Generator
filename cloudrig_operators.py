@@ -211,8 +211,8 @@ class BFL_ByAnon_makefingers(bpy.types.Operator):
         for chain in fingers:
             bone = bpy.context.object.pose.bones.get(chain[0])
             bone.cloudrig_component.component_type = "Chain: Finger"
-            bone.cloudrig_component.params.fk_chain.root = True
-            bone.cloudrig_component.params.fk_chain.hinge = True
+            bone.cloudrig_component.params.fk_chain['root'] = False
+            bone.cloudrig_component.params.fk_chain.hinge = False
             bone.cloudrig_component.params.chain.sharp = True
             bone.cloudrig_component.params.chain.tip_control = True
             bone.cloudrig_component.params.ik_chain.use_pole = True
