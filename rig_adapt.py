@@ -998,84 +998,84 @@ class STORM_Rig_Generator(bpy.types.Operator):
         pose_bones["MCH-finger4_ik.parent.L"].constraints["SWITCH_PARENT"].targets[0].subtarget="MCH-upperarm_ik_target.L"
         
         mode(mode='EDIT')
-        for bone in edit_bones:
-            bone.select_head = False
-            bone.select_tail = False
-            bone.select = False
-        edit_bones["ORG-finger1.L"].select_tail=True
-        edit_bones.active = edit_bones["ORG-finger1.L"]
-        context.active_object.data.collections_all["ORG"].is_visible = True
-        bpy.ops.armature.extrude_move(
-            ARMATURE_OT_extrude={"forked": False},
-            TRANSFORM_OT_translate={
-                "value": (0, 0, -.05),   
-                "orient_type": 'NORMAL',
-            }
-        )
-        edit_bones["ORG-finger1.L"].select_tail=False
-        edit_bones["ORG-finger1.L.001"].select_tail=True
-        edit_bones.active = edit_bones["ORG-finger1.L.001"]
-        bpy.ops.armature.extrude_move(
-            ARMATURE_OT_extrude={"forked": False},
-            TRANSFORM_OT_translate={
-                "value": (0, .025, 0),   
-                "orient_type": 'NORMAL',
-            }
-        )
-        edit_bones["ORG-finger1.L.002"].name = "finger1_ik_pole.L"
-        edit_bones["finger1_ik_pole.L"].use_connect = False
-        context.active_object.data.collections_all["ORG"].is_visible = False
+        # for bone in edit_bones:
+        #     bone.select_head = False
+        #     bone.select_tail = False
+        #     bone.select = False
+        # edit_bones["ORG-finger1.L"].select_tail=True
+        # edit_bones.active = edit_bones["ORG-finger1.L"]
+        # context.active_object.data.collections_all["ORG"].is_visible = True
+        # bpy.ops.armature.extrude_move(
+        #     ARMATURE_OT_extrude={"forked": False},
+        #     TRANSFORM_OT_translate={
+        #         "value": (0, 0, -.05),   
+        #         "orient_type": 'NORMAL',
+        #     }
+        # )
+        # edit_bones["ORG-finger1.L"].select_tail=False
+        # edit_bones["ORG-finger1.L.001"].select_tail=True
+        # edit_bones.active = edit_bones["ORG-finger1.L.001"]
+        # bpy.ops.armature.extrude_move(
+        #     ARMATURE_OT_extrude={"forked": False},
+        #     TRANSFORM_OT_translate={
+        #         "value": (0, .025, 0),   
+        #         "orient_type": 'NORMAL',
+        #     }
+        # )
+        # edit_bones["ORG-finger1.L.002"].name = "finger1_ik_pole.L"
+        # edit_bones["finger1_ik_pole.L"].use_connect = False
+        # # context.active_object.data.collections_all["ORG"].is_visible = False
 
-        copy_bone_props("IK2-DT-finger12.L", edit_bones["finger1_ik.L"], parent="finger1_ik.L")
-        copy_bone_props("IK2-ROT-finger12.L", edit_bones["finger1_ik.L"], parent="IK2-DT-finger12.L")
+        # copy_bone_props("IK2-DT-finger12.L", edit_bones["finger1_ik.L"], parent="finger1_ik.L")
+        # copy_bone_props("IK2-ROT-finger12.L", edit_bones["finger1_ik.L"], parent="IK2-DT-finger12.L")
         
-        copy_bone_props("IK1_finger1.L", edit_bones["ORG-finger1.L"], parent="ORG-hand.L")
-        copy_bone_props("IK1_finger11.L", edit_bones["ORG-finger11.L"], parent="IK1_finger1.L")
-        copy_bone_props("IK1_finger12.L", edit_bones["ORG-finger12.L"], parent="IK1_finger11.L")
-        copy_bone_props("IK2_finger1.L", edit_bones["ORG-finger1.L"], parent="ORG-hand.L")
-        copy_bone_props("IK2_finger11.L", edit_bones["ORG-finger11.L"], parent="IK2_finger1.L")
-        copy_bone_props("IK2_finger12.L", edit_bones["ORG-finger12.L"], parent="IK2-ROT-finger12.L")
-        mode(mode="POSE")
-        context.active_object.data.collections_all["ORG"].assign(bones["IK2-DT-finger12.L"])
-        context.active_object.data.collections_all["ORG"].assign(bones["IK2-ROT-finger12.L"])
-        context.active_object.data.collections_all["ORG"].assign(bones["IK1_finger1.L"])
-        context.active_object.data.collections_all["ORG"].assign(bones["IK1_finger11.L"])
-        context.active_object.data.collections_all["ORG"].assign(bones["IK1_finger12.L"])
-        context.active_object.data.collections_all["ORG"].assign(bones["IK2_finger1.L"])
-        context.active_object.data.collections_all["ORG"].assign(bones["IK2_finger11.L"])
-        context.active_object.data.collections_all["ORG"].assign(bones["IK2_finger12.L"])
+        # copy_bone_props("IK1_finger1.L", edit_bones["ORG-finger1.L"], parent="ORG-hand.L")
+        # copy_bone_props("IK1_finger11.L", edit_bones["ORG-finger11.L"], parent="IK1_finger1.L")
+        # copy_bone_props("IK1_finger12.L", edit_bones["ORG-finger12.L"], parent="IK1_finger11.L")
+        # copy_bone_props("IK2_finger1.L", edit_bones["ORG-finger1.L"], parent="ORG-hand.L")
+        # copy_bone_props("IK2_finger11.L", edit_bones["ORG-finger11.L"], parent="IK2_finger1.L")
+        # copy_bone_props("IK2_finger12.L", edit_bones["ORG-finger12.L"], parent="IK2-ROT-finger12.L")
+        # mode(mode="POSE")
+        # context.active_object.data.collections_all["ORG"].assign(bones["IK2-DT-finger12.L"])
+        # context.active_object.data.collections_all["ORG"].assign(bones["IK2-ROT-finger12.L"])
+        # context.active_object.data.collections_all["ORG"].assign(bones["IK1_finger1.L"])
+        # context.active_object.data.collections_all["ORG"].assign(bones["IK1_finger11.L"])
+        # context.active_object.data.collections_all["ORG"].assign(bones["IK1_finger12.L"])
+        # context.active_object.data.collections_all["ORG"].assign(bones["IK2_finger1.L"])
+        # context.active_object.data.collections_all["ORG"].assign(bones["IK2_finger11.L"])
+        # context.active_object.data.collections_all["ORG"].assign(bones["IK2_finger12.L"])
 
-        constraints = pose_bones["IK1_finger12.L"].constraints
-        const = constraints.new('IK')
-        const.target = context.active_object
-        const.subtarget = "finger1_ik.L"
-        const.pole_target = context.active_object
-        const.pole_subtarget = "finger1_ik_pole.L"
-        const.pole_angle = -math.radians(90)
-        const.chain_count = 3
-        const.use_stretch = False
+        # constraints = pose_bones["IK1_finger12.L"].constraints
+        # const = constraints.new('IK')
+        # const.target = context.active_object
+        # const.subtarget = "finger1_ik.L"
+        # const.pole_target = context.active_object
+        # const.pole_subtarget = "finger1_ik_pole.L"
+        # const.pole_angle = -math.radians(90)
+        # const.chain_count = 3
+        # const.use_stretch = False
 
-        const = pose_bones["IK2-DT-finger12.L"].constraints.new('DAMPED_TRACK')
-        const.target = context.active_object
-        const.subtarget = "IK1_finger12.L"
-        const.track_axis = 'TRACK_NEGATIVE_Y'
+        # const = pose_bones["IK2-DT-finger12.L"].constraints.new('DAMPED_TRACK')
+        # const.target = context.active_object
+        # const.subtarget = "IK1_finger12.L"
+        # const.track_axis = 'TRACK_NEGATIVE_Y'
 
-        const = pose_bones["IK2-ROT-finger12.L"].constraints.new('COPY_ROTATION')
-        const.target = context.active_object
-        const.subtarget = "finger1_ik.L"
-        const.mix_mode = 'BEFORE'
-        const.target_space = 'LOCAL'
-        const.owner_space = 'LOCAL'
+        # const = pose_bones["IK2-ROT-finger12.L"].constraints.new('COPY_ROTATION')
+        # const.target = context.active_object
+        # const.subtarget = "finger1_ik.L"
+        # const.mix_mode = 'BEFORE'
+        # const.target_space = 'LOCAL'
+        # const.owner_space = 'LOCAL'
 
-        constraints = pose_bones["IK2_finger11.L"].constraints
-        const = constraints.new('IK')
-        const.target = context.active_object
-        const.subtarget = "IK2_finger12.L"
-        const.pole_target = context.active_object
-        const.pole_subtarget = "finger1_ik_pole.L"
-        const.pole_angle = -math.radians(90)
-        const.chain_count = 2
-        const.use_stretch = False
+        # constraints = pose_bones["IK2_finger11.L"].constraints
+        # const = constraints.new('IK')
+        # const.target = context.active_object
+        # const.subtarget = "IK2_finger12.L"
+        # const.pole_target = context.active_object
+        # const.pole_subtarget = "finger1_ik_pole.L"
+        # const.pole_angle = -math.radians(90)
+        # const.chain_count = 2
+        # const.use_stretch = False
 
         ###############################
         # ARM IK FIX
