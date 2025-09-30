@@ -138,6 +138,17 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         context.scene.col_prop.collections = bpy.data.objects[context.scene.byanon_active_storm_armature.name].users_collection[0].name
         context.scene.col_prop.armatures = context.scene.byanon_active_storm_armature.name
         bpy.ops.object.remove_char_code()
+        old_obj = bpy.data.objects[context.scene.byanon_active_storm_armature.name]
+        old_obj.select_set(True)
+        context.view_layer.objects.active = old_obj
+        bpy.ops.object.mode_set(mode="POSE")
+        for bone in context.active_object.data.bones:
+            bone.select = True
+        bpy.ops.transform.bbone_resize(value=(.01, .01, .01))
+        for bone in context.active_object.data.bones:
+            bone.select = False
+        bpy.ops.object.mode_set(mode="OBJECT")
+        
         context.view_layer.objects.active = None
         if bpy.app.version[0] > 3:
             bpy.data.objects[context.scene.byanon_active_storm_armature.name].data.collections.new("STORM")
@@ -207,6 +218,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
     # @classmethod
     def execute(self, context):
         # 0.276
+        obj = context.active_object
         edit_bones = context.active_object.data.edit_bones
         pose_bones = context.active_object.pose.bones
         bones = context.active_object.data.bones
@@ -571,7 +583,8 @@ class STORM_Rig_Generator(bpy.types.Operator):
         edit_bones["finger21.L"].select = True
         edit_bones["finger31.L"].select = True
         edit_bones["finger41.L"].select = True
-        bpy.ops.transform.translate(value=(0, 0, -0.0001), orient_type='NORMAL')
+        bpy.ops.transform.translate(value=(0, 0, -0.000001), orient_type='NORMAL')
+
         for bone in bones:
             if bone.name.endswith(".L"):
                 edit_bones[bone.name].select = True
@@ -615,6 +628,45 @@ class STORM_Rig_Generator(bpy.types.Operator):
         bones["clavicle.R"].select = False
 
         bpy.ops.pose.rigify_generate()
+        # obj_rigify = context.active_object
+        # mode(mode="OBJECT")
+        # context.active_object.select_set(False)
+        # context.view_layer.objects.active = obj
+        # context.active_object.select_set(True)
+        # mode(mode="POSE")
+        # # bpy.context.scene.rigiall_props.ik_fingers = True
+        # for i in range(5):
+        #     for j in range(3):
+        #         name = f"finger{i}"
+        #         if j != 0:
+        #             name+=str(j)
+        #         bones[f"{name}.L"].select = True
+        # bpy.ops.bfl_cloudrig.makefingers()
+        # bpy.ops.pose.cloudrig_generate()
+        # bpy.ops.object.mode_set(mode="EDIT")
+        # edit_bones = context.active_object.data.edit_bones
+        # for bone in edit_bones:
+        #     if bone.select_head or bone.select_tail or bone.select:
+        #         bone.select = False
+        #         bone.select_head = False
+        #         bone.select_tail = False
+        
+        # edit_bones["IK2-finger11.L"].select_head = True
+        # edit_bones["IK2-finger21.L"].select_head = True
+        # edit_bones["IK2-finger31.L"].select_head = True
+        # edit_bones["IK2-finger41.L"].select_head = True
+        
+        # edit_bones["IK-M-finger12.L"].select_head = True
+        # edit_bones["IK-M-finger22.L"].select_head = True
+        # edit_bones["IK-M-finger32.L"].select_head = True
+        # edit_bones["IK-M-finger42.L"].select_head = True
+
+        # bpy.ops.transform.translate(value=(0, 0, -0.00009), orient_type='NORMAL')
+        # mode(mode="OBJECT")
+        # context.active_object.select_set(False)
+        # context.view_layer.objects.active = obj_rigify
+        # context.active_object.select_set(True)
+        # mode(mode="POSE")
 
         edit_bones = context.active_object.data.edit_bones
         pose_bones = context.active_object.pose.bones
@@ -965,16 +1017,16 @@ class STORM_Rig_Generator(bpy.types.Operator):
         ###############################
         # FINGERS
         ###############################
-        for i in range(5):
-                name = f"ORG-finger{i}2.L"
-                bone = pose_bones.get(name)
-                if bone:
-                    bone.constraints["FingerIK"].use_rotation = True
-                    bone.ik_stiffness_x = 0.99
-                    name = f"ORG-finger{i}2.R"
-                    bone = pose_bones.get(name)
-                    bone.constraints["FingerIK"].use_rotation = True
-                    bone.ik_stiffness_x = 0.99
+        # for i in range(5):
+        #         name = f"ORG-finger{i}2.L"
+        #         bone = pose_bones.get(name)
+        #         if bone:
+        #             bone.constraints["FingerIK"].use_rotation = True
+        #             bone.ik_stiffness_x = 0.99
+        #             name = f"ORG-finger{i}2.R"
+        #             bone = pose_bones.get(name)
+        #             bone.constraints["FingerIK"].use_rotation = True
+        #             bone.ik_stiffness_x = 0.99
 
         for i in range(5):
             name = f"finger{i}_ik.L"
@@ -998,84 +1050,383 @@ class STORM_Rig_Generator(bpy.types.Operator):
         pose_bones["MCH-finger4_ik.parent.L"].constraints["SWITCH_PARENT"].targets[0].subtarget="MCH-upperarm_ik_target.L"
         
         mode(mode='EDIT')
-        # for bone in edit_bones:
-        #     bone.select_head = False
-        #     bone.select_tail = False
-        #     bone.select = False
-        # edit_bones["ORG-finger1.L"].select_tail=True
-        # edit_bones.active = edit_bones["ORG-finger1.L"]
-        # context.active_object.data.collections_all["ORG"].is_visible = True
-        # bpy.ops.armature.extrude_move(
-        #     ARMATURE_OT_extrude={"forked": False},
-        #     TRANSFORM_OT_translate={
-        #         "value": (0, 0, -.05),   
-        #         "orient_type": 'NORMAL',
-        #     }
-        # )
-        # edit_bones["ORG-finger1.L"].select_tail=False
-        # edit_bones["ORG-finger1.L.001"].select_tail=True
-        # edit_bones.active = edit_bones["ORG-finger1.L.001"]
-        # bpy.ops.armature.extrude_move(
-        #     ARMATURE_OT_extrude={"forked": False},
-        #     TRANSFORM_OT_translate={
-        #         "value": (0, .025, 0),   
-        #         "orient_type": 'NORMAL',
-        #     }
-        # )
-        # edit_bones["ORG-finger1.L.002"].name = "finger1_ik_pole.L"
-        # edit_bones["finger1_ik_pole.L"].use_connect = False
-        # # context.active_object.data.collections_all["ORG"].is_visible = False
+        for bone in edit_bones:
+            if bone.select_head or bone.select_tail or bone.select:
+                bone.select = False
+                bone.select_head = False
+                bone.select_tail = False
+        for i in range(0, 5):
+            finger = f"finger{i}"
+            edit_bones[f"ORG-{finger}.L"].select_tail=True
+            edit_bones.active = edit_bones[f"ORG-{finger}.L"]
+            context.active_object.data.collections_all["ORG"].is_visible = True
+            bpy.ops.armature.extrude_move(
+                ARMATURE_OT_extrude={"forked": False},
+                TRANSFORM_OT_translate={
+                    "value": (0, 0, -.05),   
+                    "orient_type": 'NORMAL',
+                }
+            )
+            edit_bones[f"ORG-{finger}.L"].select_tail=False
+            edit_bones[f"ORG-{finger}.L.001"].select_tail=True
+            edit_bones.active = edit_bones[f"ORG-{finger}.L.001"]
+            bpy.ops.armature.extrude_move(
+                ARMATURE_OT_extrude={"forked": False},
+                TRANSFORM_OT_translate={
+                    "value": (0, .025, 0),   
+                    "orient_type": 'NORMAL',
+                }
+            )
+            edit_bones[f"ORG-{finger}.L.002"].name = f"{finger}_ik_pole.L"
+            edit_bones[f"ORG-{finger}.L.001"].name = f"VIS_{finger}_ik_pole.L"
+            edit_bones[f"VIS_{finger}_ik_pole.L"].hide_select = True
 
-        # copy_bone_props("IK2-DT-finger12.L", edit_bones["finger1_ik.L"], parent="finger1_ik.L")
-        # copy_bone_props("IK2-ROT-finger12.L", edit_bones["finger1_ik.L"], parent="IK2-DT-finger12.L")
+            edit_bones[f"{finger}_ik_pole.L"].use_connect = False
+            edit_bones[f"VIS_{finger}_ik_pole.L"].use_connect = False
+
+            # tail = edit_bones[f"VIS_{finger}_ik_pole.L"].head.copy()
+            # head = edit_bones[f"VIS_{finger}_ik_pole.L"].tail.copy()
+            # edit_bones[f"VIS_{finger}_ik_pole.L"].head = head
+            # edit_bones[f"VIS_{finger}_ik_pole.L"].tail = tail
+            # print(edit_bones[f"VIS_{finger}_ik_pole.L"].head, edit_bones[f"VIS_{finger}_ik_pole.L"].tail)
+            context.active_object.data.collections_all["ORG"].is_visible = False
+
+            copy_bone_props(f"IK2-DT-{finger}2.L", edit_bones[f"{finger}_ik.L"], parent=f"{finger}_ik.L")
+            copy_bone_props(f"{finger}_STR.L", edit_bones[f"{finger}_master.L"], parent="ORG-hand.L")
+            copy_bone_props(f"IK2-ROT-{finger}2.L", edit_bones[f"{finger}_ik.L"], parent=f"IK2-DT-{finger}2.L")
+
+            copy_bone_props(f"IK1_{finger}.L", edit_bones[f"ORG-{finger}.L"], parent="ORG-hand.L")
+            copy_bone_props(f"IK1_{finger}1.L", edit_bones[f"ORG-{finger}1.L"], parent=f"IK1_{finger}.L")
+            copy_bone_props(f"IK1_{finger}2.L", edit_bones[f"ORG-{finger}2.L"], parent=f"IK1_{finger}1.L")
+            copy_bone_props(f"IK2_{finger}.L", edit_bones[f"ORG-{finger}.L"], parent="ORG-hand.L")
+            copy_bone_props(f"IK2_{finger}1.L", edit_bones[f"ORG-{finger}1.L"], parent=f"IK2_{finger}.L")
+            copy_bone_props(f"IK2_{finger}2.L", edit_bones[f"ORG-{finger}2.L"], parent=f"IK2-ROT-{finger}2.L")
+
+            for bone in edit_bones:
+                bone.select_head = False
+                bone.select_tail = False
+                bone.select = False
+            edit_bones[f"{finger}_STR.L"].tail = edit_bones[f"{finger}2.L"].tail
+            edit_bones[f"IK2_{finger}1.L"].select_head = True
+            edit_bones[f"IK1_{finger}2.L"].select_head = True
+            if finger != "finger0":
+                bpy.ops.transform.translate(value=(0, 0, -0.00009), orient_type='NORMAL')
+            edit_bones[f"IK2_{finger}1.L"].select_head = False
+            edit_bones[f"IK1_{finger}2.L"].select_head = False
+            edit_bones[f"{finger}_ik_pole.L"].parent = edit_bones[f"{finger}_STR.L"]
+            edit_bones[f"{finger}_ik_pole.L"].inherit_scale = 'NONE'
+            mode(mode="POSE")
+            context.active_object.data.collections_all["ORG"].assign(bones[f"IK2-DT-{finger}2.L"])
+            context.active_object.data.collections_all["ORG"].assign(bones[f"IK2-ROT-{finger}2.L"])
+            context.active_object.data.collections_all["ORG"].assign(bones[f"IK1_{finger}.L"])
+            context.active_object.data.collections_all["ORG"].assign(bones[f"IK1_{finger}1.L"])
+            context.active_object.data.collections_all["ORG"].assign(bones[f"IK1_{finger}2.L"])
+            context.active_object.data.collections_all["ORG"].assign(bones[f"IK2_{finger}.L"])
+            context.active_object.data.collections_all["ORG"].assign(bones[f"IK2_{finger}1.L"])
+            context.active_object.data.collections_all["ORG"].assign(bones[f"IK2_{finger}2.L"])
+            context.active_object.data.collections_all["ORG"].assign(bones[f"{finger}_STR.L"])
+            context.active_object.data.collections_all["Fingers"].assign(bones[f"{finger}_ik_pole.L"])
+            context.active_object.data.collections_all["Fingers"].assign(bones[f"VIS_{finger}_ik_pole.L"])
+
+            bone = pose_bones[f"{finger}_ik_pole.L"]
+            name = context.active_object.name
+            bone.custom_shape = bpy.data.objects.get(f"WGT-{context.active_object.name}_RIG_thigh_ik_target.L")
+            bone.custom_shape_scale_xyz[0] = 0.5
+            bone.custom_shape_scale_xyz[1] = 0.5
+            bone.custom_shape_scale_xyz[2] = 0.5
+
+            bone = pose_bones[f"VIS_{finger}_ik_pole.L"]
+            bone.custom_shape = bpy.data.objects.get(f"WGT-{context.active_object.name}_RIG_VIS_thigh_ik_pole.L")
+            
+            constraints = pose_bones[f"IK1_{finger}2.L"].constraints
+            const = constraints.new('IK')
+            const.target = context.active_object
+            const.subtarget = f"{finger}_ik.L"
+            const.pole_target = context.active_object
+            const.pole_subtarget = f"{finger}_ik_pole.L"
+            const.pole_angle = -math.radians(90)
+            const.chain_count = 3
+            const.use_stretch = False
+
+            const = pose_bones[f"IK2-DT-{finger}2.L"].constraints.new('TRACK_TO')
+            const.target = context.active_object
+            const.subtarget = f"IK1_{finger}2.L"
+            const.track_axis = 'TRACK_NEGATIVE_Y'
+            const.use_target_z = True
+            const.up_axis = 'UP_Z'
+
+            const = pose_bones[f"IK2-ROT-{finger}2.L"].constraints.new('COPY_ROTATION')
+            const.target = context.active_object
+            const.subtarget = f"{finger}_ik.L"
+            const.mix_mode = 'BEFORE'
+            const.target_space = 'LOCAL'
+            const.owner_space = 'LOCAL'
+
+            constraints = pose_bones[f"IK2_{finger}1.L"].constraints
+            const = constraints.new('IK')
+            const.target = context.active_object
+            const.subtarget = f"IK2_{finger}2.L"
+            const.pole_target = context.active_object
+            const.pole_subtarget = f"{finger}_ik_pole.L"
+            const.pole_angle = -math.radians(90)
+            const.chain_count = 2
+            const.use_stretch = False
+            
+
+            constraints = pose_bones[f"{finger}_STR.L"].constraints
+            const = constraints.new('STRETCH_TO')
+            const.target = context.active_object
+            const.subtarget = f"{finger}_ik.L"
+            const.use_bulge_min = True
+            const.use_bulge_max = True
+
+            const = constraints.new('LIMIT_SCALE')
+            const.use_max_y = True
+            const.max_y = 1.0
+            const.use_transform_limit = True
+
+            constraints = pose_bones[f"VIS_{finger}_ik_pole.L"].constraints
+            const = constraints.new('STRETCH_TO')
+            const.target = context.active_object
+            const.subtarget = f"{finger}_ik_pole.L"
+            const.use_bulge_min = True
+            const.use_bulge_max = True
+
+            const = pose_bones[f"ORG-{finger}.L"].constraints.new("COPY_TRANSFORMS")
+            const.target = context.active_object
+            const.subtarget = f"IK2_{finger}.L"
+            driver = const.driver_add("influence").driver
+            driver.type = 'SCRIPTED'
+            driver.expression = "ik"
+            var = driver.variables.new()
+            var.name = "ik"
+            var.type = "SINGLE_PROP"
+            var.targets[0].id_type = "OBJECT"
+            var.targets[0].id = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+            var.targets[0].data_path = f'pose.bones["{finger}_ik.L"]["FK_IK"]'
+
+            const = pose_bones[f"ORG-{finger}1.L"].constraints.new("COPY_TRANSFORMS")
+            const.target = context.active_object
+            const.subtarget = f"IK2_{finger}1.L"
+            driver = const.driver_add("influence").driver
+            driver.type = 'SCRIPTED'
+            driver.expression = "ik"
+            var = driver.variables.new()
+            var.name = "ik"
+            var.type = "SINGLE_PROP"
+            var.targets[0].id_type = "OBJECT"
+            var.targets[0].id = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+            var.targets[0].data_path = f'pose.bones["{finger}_ik.L"]["FK_IK"]'
+
+            const = pose_bones[f"ORG-{finger}2.L"].constraints.new("COPY_TRANSFORMS")
+            const.target = context.active_object
+            const.subtarget = f"IK2_{finger}2.L"
+            driver = const.driver_add("influence").driver
+            driver.type = 'SCRIPTED'
+            driver.expression = "ik"
+            var = driver.variables.new()
+            var.name = "ik"
+            var.type = "SINGLE_PROP"
+            var.targets[0].id_type = "OBJECT"
+            var.targets[0].id = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+            var.targets[0].data_path = f'pose.bones["{finger}_ik.L"]["FK_IK"]'
+            pose_bones[f"ORG-{finger}2.L"].constraints.remove(pose_bones[f"ORG-{finger}2.L"].constraints["FingerIK"])
+
+            mode(mode="EDIT")
         
-        # copy_bone_props("IK1_finger1.L", edit_bones["ORG-finger1.L"], parent="ORG-hand.L")
-        # copy_bone_props("IK1_finger11.L", edit_bones["ORG-finger11.L"], parent="IK1_finger1.L")
-        # copy_bone_props("IK1_finger12.L", edit_bones["ORG-finger12.L"], parent="IK1_finger11.L")
-        # copy_bone_props("IK2_finger1.L", edit_bones["ORG-finger1.L"], parent="ORG-hand.L")
-        # copy_bone_props("IK2_finger11.L", edit_bones["ORG-finger11.L"], parent="IK2_finger1.L")
-        # copy_bone_props("IK2_finger12.L", edit_bones["ORG-finger12.L"], parent="IK2-ROT-finger12.L")
-        # mode(mode="POSE")
-        # context.active_object.data.collections_all["ORG"].assign(bones["IK2-DT-finger12.L"])
-        # context.active_object.data.collections_all["ORG"].assign(bones["IK2-ROT-finger12.L"])
-        # context.active_object.data.collections_all["ORG"].assign(bones["IK1_finger1.L"])
-        # context.active_object.data.collections_all["ORG"].assign(bones["IK1_finger11.L"])
-        # context.active_object.data.collections_all["ORG"].assign(bones["IK1_finger12.L"])
-        # context.active_object.data.collections_all["ORG"].assign(bones["IK2_finger1.L"])
-        # context.active_object.data.collections_all["ORG"].assign(bones["IK2_finger11.L"])
-        # context.active_object.data.collections_all["ORG"].assign(bones["IK2_finger12.L"])
+        # RIGHT SIDE
 
-        # constraints = pose_bones["IK1_finger12.L"].constraints
-        # const = constraints.new('IK')
-        # const.target = context.active_object
-        # const.subtarget = "finger1_ik.L"
-        # const.pole_target = context.active_object
-        # const.pole_subtarget = "finger1_ik_pole.L"
-        # const.pole_angle = -math.radians(90)
-        # const.chain_count = 3
-        # const.use_stretch = False
+        pose_bones["MCH-finger0_ik.parent.R"].constraints["SWITCH_PARENT"].targets[0].subtarget="MCH-upperarm_ik_target.R"
+        pose_bones["MCH-finger1_ik.parent.R"].constraints["SWITCH_PARENT"].targets[0].subtarget="MCH-upperarm_ik_target.R"
+        pose_bones["MCH-finger2_ik.parent.R"].constraints["SWITCH_PARENT"].targets[0].subtarget="MCH-upperarm_ik_target.R"
+        pose_bones["MCH-finger3_ik.parent.R"].constraints["SWITCH_PARENT"].targets[0].subtarget="MCH-upperarm_ik_target.R"
+        pose_bones["MCH-finger4_ik.parent.R"].constraints["SWITCH_PARENT"].targets[0].subtarget="MCH-upperarm_ik_target.R"
+        
+        mode(mode='EDIT')
+        for bone in edit_bones:
+            if bone.select_head or bone.select_tail or bone.select:
+                bone.select = False
+                bone.select_head = False
+                bone.select_tail = False
+        for i in range(0, 5):
+            finger = f"finger{i}"
+            edit_bones[f"ORG-{finger}.R"].select_tail=True
+            edit_bones.active = edit_bones[f"ORG-{finger}.R"]
+            context.active_object.data.collections_all["ORG"].is_visible = True
+            bpy.ops.armature.extrude_move(
+                ARMATURE_OT_extrude={"forked": False},
+                TRANSFORM_OT_translate={
+                    "value": (0, 0, -.05),   
+                    "orient_type": 'NORMAL',
+                }
+            )
+            edit_bones[f"ORG-{finger}.R"].select_tail=False
+            edit_bones[f"ORG-{finger}.R.001"].select_tail=True
+            edit_bones.active = edit_bones[f"ORG-{finger}.R.001"]
+            bpy.ops.armature.extrude_move(
+                ARMATURE_OT_extrude={"forked": False},
+                TRANSFORM_OT_translate={
+                    "value": (0, .025, 0),   
+                    "orient_type": 'NORMAL',
+                }
+            )
+            edit_bones[f"ORG-{finger}.R.002"].name = f"{finger}_ik_pole.R"
+            edit_bones[f"ORG-{finger}.R.001"].name = f"VIS_{finger}_ik_pole.R"
+            edit_bones[f"VIS_{finger}_ik_pole.R"].hide_select = True
 
-        # const = pose_bones["IK2-DT-finger12.L"].constraints.new('DAMPED_TRACK')
-        # const.target = context.active_object
-        # const.subtarget = "IK1_finger12.L"
-        # const.track_axis = 'TRACK_NEGATIVE_Y'
+            edit_bones[f"{finger}_ik_pole.R"].use_connect = False
+            edit_bones[f"VIS_{finger}_ik_pole.R"].use_connect = False
 
-        # const = pose_bones["IK2-ROT-finger12.L"].constraints.new('COPY_ROTATION')
-        # const.target = context.active_object
-        # const.subtarget = "finger1_ik.L"
-        # const.mix_mode = 'BEFORE'
-        # const.target_space = 'LOCAL'
-        # const.owner_space = 'LOCAL'
+            # tail = edit_bones[f"VIS_{finger}_ik_pole.R"].head.copy()
+            # head = edit_bones[f"VIS_{finger}_ik_pole.R"].tail.copy()
+            # edit_bones[f"VIS_{finger}_ik_pole.R"].head = head
+            # edit_bones[f"VIS_{finger}_ik_pole.R"].tail = tail
+            # print(edit_bones[f"VIS_{finger}_ik_pole.R"].head, edit_bones[f"VIS_{finger}_ik_pole.R"].tail)
+            context.active_object.data.collections_all["ORG"].is_visible = False
 
-        # constraints = pose_bones["IK2_finger11.L"].constraints
-        # const = constraints.new('IK')
-        # const.target = context.active_object
-        # const.subtarget = "IK2_finger12.L"
-        # const.pole_target = context.active_object
-        # const.pole_subtarget = "finger1_ik_pole.L"
-        # const.pole_angle = -math.radians(90)
-        # const.chain_count = 2
-        # const.use_stretch = False
+            copy_bone_props(f"IK2-DT-{finger}2.R", edit_bones[f"{finger}_ik.R"], parent=f"{finger}_ik.R")
+            copy_bone_props(f"{finger}_STR.R", edit_bones[f"{finger}_master.R"], parent="ORG-hand.R")
+            copy_bone_props(f"IK2-ROT-{finger}2.R", edit_bones[f"{finger}_ik.R"], parent=f"IK2-DT-{finger}2.R")
+
+            copy_bone_props(f"IK1_{finger}.R", edit_bones[f"ORG-{finger}.R"], parent="ORG-hand.R")
+            copy_bone_props(f"IK1_{finger}1.R", edit_bones[f"ORG-{finger}1.R"], parent=f"IK1_{finger}.R")
+            copy_bone_props(f"IK1_{finger}2.R", edit_bones[f"ORG-{finger}2.R"], parent=f"IK1_{finger}1.R")
+            copy_bone_props(f"IK2_{finger}.R", edit_bones[f"ORG-{finger}.R"], parent="ORG-hand.R")
+            copy_bone_props(f"IK2_{finger}1.R", edit_bones[f"ORG-{finger}1.R"], parent=f"IK2_{finger}.R")
+            copy_bone_props(f"IK2_{finger}2.R", edit_bones[f"ORG-{finger}2.R"], parent=f"IK2-ROT-{finger}2.R")
+
+            for bone in edit_bones:
+                bone.select_head = False
+                bone.select_tail = False
+                bone.select = False
+            edit_bones[f"{finger}_STR.R"].tail = edit_bones[f"{finger}2.R"].tail
+            edit_bones[f"IK2_{finger}1.R"].select_head = True
+            edit_bones[f"IK1_{finger}2.R"].select_head = True
+            if finger != "finger0":
+                bpy.ops.transform.translate(value=(0, 0, -0.00009), orient_type='NORMAL')
+            edit_bones[f"IK2_{finger}1.R"].select_head = False
+            edit_bones[f"IK1_{finger}2.R"].select_head = False
+            edit_bones[f"{finger}_ik_pole.R"].parent = edit_bones[f"{finger}_STR.R"]
+            edit_bones[f"{finger}_ik_pole.R"].inherit_scale = 'NONE'
+            mode(mode="POSE")
+            context.active_object.data.collections_all["ORG"].assign(bones[f"IK2-DT-{finger}2.R"])
+            context.active_object.data.collections_all["ORG"].assign(bones[f"IK2-ROT-{finger}2.R"])
+            context.active_object.data.collections_all["ORG"].assign(bones[f"IK1_{finger}.R"])
+            context.active_object.data.collections_all["ORG"].assign(bones[f"IK1_{finger}1.R"])
+            context.active_object.data.collections_all["ORG"].assign(bones[f"IK1_{finger}2.R"])
+            context.active_object.data.collections_all["ORG"].assign(bones[f"IK2_{finger}.R"])
+            context.active_object.data.collections_all["ORG"].assign(bones[f"IK2_{finger}1.R"])
+            context.active_object.data.collections_all["ORG"].assign(bones[f"IK2_{finger}2.R"])
+            context.active_object.data.collections_all["ORG"].assign(bones[f"{finger}_STR.R"])
+            context.active_object.data.collections_all["Fingers"].assign(bones[f"{finger}_ik_pole.R"])
+            context.active_object.data.collections_all["Fingers"].assign(bones[f"VIS_{finger}_ik_pole.R"])
+
+            bone = pose_bones[f"{finger}_ik_pole.R"]
+            name = context.active_object.name
+            bone.custom_shape = bpy.data.objects.get(f"WGT-{context.active_object.name}_RIG_thigh_ik_target.R")
+            bone.custom_shape_scale_xyz[0] = 0.5
+            bone.custom_shape_scale_xyz[1] = 0.5
+            bone.custom_shape_scale_xyz[2] = 0.5
+
+            bone = pose_bones[f"VIS_{finger}_ik_pole.R"]
+            bone.custom_shape = bpy.data.objects.get(f"WGT-{context.active_object.name}_RIG_VIS_thigh_ik_pole.R")
+            
+            constraints = pose_bones[f"IK1_{finger}2.R"].constraints
+            const = constraints.new('IK')
+            const.target = context.active_object
+            const.subtarget = f"{finger}_ik.R"
+            const.pole_target = context.active_object
+            const.pole_subtarget = f"{finger}_ik_pole.R"
+            const.pole_angle = -math.radians(90)
+            const.chain_count = 3
+            const.use_stretch = False
+
+            const = pose_bones[f"IK2-DT-{finger}2.R"].constraints.new('TRACK_TO')
+            const.target = context.active_object
+            const.subtarget = f"IK1_{finger}2.R"
+            const.track_axis = 'TRACK_NEGATIVE_Y'
+            const.use_target_z = True
+            const.up_axis = 'UP_Z'
+
+            const = pose_bones[f"IK2-ROT-{finger}2.R"].constraints.new('COPY_ROTATION')
+            const.target = context.active_object
+            const.subtarget = f"{finger}_ik.R"
+            const.mix_mode = 'BEFORE'
+            const.target_space = 'LOCAL'
+            const.owner_space = 'LOCAL'
+
+            constraints = pose_bones[f"IK2_{finger}1.R"].constraints
+            const = constraints.new('IK')
+            const.target = context.active_object
+            const.subtarget = f"IK2_{finger}2.R"
+            const.pole_target = context.active_object
+            const.pole_subtarget = f"{finger}_ik_pole.R"
+            const.pole_angle = -math.radians(90)
+            const.chain_count = 2
+            const.use_stretch = False
+            
+
+            constraints = pose_bones[f"{finger}_STR.R"].constraints
+            const = constraints.new('STRETCH_TO')
+            const.target = context.active_object
+            const.subtarget = f"{finger}_ik.R"
+            const.use_bulge_min = True
+            const.use_bulge_max = True
+
+            const = constraints.new('LIMIT_SCALE')
+            const.use_max_y = True
+            const.max_y = 1.0
+            const.use_transform_limit = True
+
+            constraints = pose_bones[f"VIS_{finger}_ik_pole.R"].constraints
+            const = constraints.new('STRETCH_TO')
+            const.target = context.active_object
+            const.subtarget = f"{finger}_ik_pole.R"
+            const.use_bulge_min = True
+            const.use_bulge_max = True
+
+            const = pose_bones[f"ORG-{finger}.R"].constraints.new("COPY_TRANSFORMS")
+            const.target = context.active_object
+            const.subtarget = f"IK2_{finger}.R"
+            driver = const.driver_add("influence").driver
+            driver.type = 'SCRIPTED'
+            driver.expression = "ik"
+            var = driver.variables.new()
+            var.name = "ik"
+            var.type = "SINGLE_PROP"
+            var.targets[0].id_type = "OBJECT"
+            var.targets[0].id = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+            var.targets[0].data_path = f'pose.bones["{finger}_ik.R"]["FK_IK"]'
+
+            const = pose_bones[f"ORG-{finger}1.R"].constraints.new("COPY_TRANSFORMS")
+            const.target = context.active_object
+            const.subtarget = f"IK2_{finger}1.R"
+            driver = const.driver_add("influence").driver
+            driver.type = 'SCRIPTED'
+            driver.expression = "ik"
+            var = driver.variables.new()
+            var.name = "ik"
+            var.type = "SINGLE_PROP"
+            var.targets[0].id_type = "OBJECT"
+            var.targets[0].id = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+            var.targets[0].data_path = f'pose.bones["{finger}_ik.R"]["FK_IK"]'
+
+            const = pose_bones[f"ORG-{finger}2.R"].constraints.new("COPY_TRANSFORMS")
+            const.target = context.active_object
+            const.subtarget = f"IK2_{finger}2.R"
+            driver = const.driver_add("influence").driver
+            driver.type = 'SCRIPTED'
+            driver.expression = "ik"
+            var = driver.variables.new()
+            var.name = "ik"
+            var.type = "SINGLE_PROP"
+            var.targets[0].id_type = "OBJECT"
+            var.targets[0].id = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+            var.targets[0].data_path = f'pose.bones["{finger}_ik.R"]["FK_IK"]'
+            pose_bones[f"ORG-{finger}2.R"].constraints.remove(pose_bones[f"ORG-{finger}2.R"].constraints["FingerIK"])
+
+            mode(mode="EDIT")
+        
 
         ###############################
         # ARM IK FIX

@@ -902,8 +902,63 @@ Do not use "Fix Mesh!" It is not required with a merged rig. Instead, use Fix Ar
         box.row().operator('bfl_byanon.noroll')
 
         #row.label(text='', icon='CHECKMARK' if bpy.context.object.data.get('bfl_byanon_LEFT') else 'CANCEL')
+         
+class BFL_CloudRig_makefingers(bpy.types.Operator):
+    bl_idname = "bfl_cloudrig.makefingers"
+    bl_label = ""
+    bl_description = ""
+    bl_options = {"UNDO","REGISTER"}
+    def execute(self, context):
+        obj = context.object
+        obj.cloudrig.enabled = True
+        bones = bpy.context.selected_pose_bones
+        bone_list = tuple((bone.name for bone in bones))
+        mode(mode='EDIT')
+        edits = obj.data.edit_bones
         
         
+        fingers = []
+        current = []
+        boneLast = None
+        for bone in bones:
+            mark(bone)
+            if boneLast != None:
+                if bone.parent != boneLast:
+                    fingers.append(list(current))
+                    current = []
+            current.append(bone.name)
+            if bone == bones[-1]:
+                fingers.append(current)
+                break
+            boneLast = bone
+            
+        mode(mode='EDIT')
+        edits = obj.data.edit_bones
+        
+        for chain in fingers:
+            edits[chain[0]].tail = edits[chain[1]].head
+            for n, bone in enumerate(chain):
+                if n == 0: continue
+                edits[bone].use_connect = True
+                if chain[-1] != bone:
+                    edits[bone].tail = edits[chain[n+1]].head
+                    
+        mode(mode='POSE')
+        bone = bpy.context.object.pose.bones.get(fingers[0][0])
+        bone.parent.cloudrig_component.component_type = "Bone Copy"
+        mode(mode='EDIT')
+        edits[bone.name].parent.parent = None
+        mode(mode='POSE')
+
+        for chain in fingers:
+            bone = bpy.context.object.pose.bones.get(chain[0])
+            bone.cloudrig_component.component_type = "Chain: Finger"
+            bone.cloudrig_component.params.fk_chain['root'] = False
+            bone.cloudrig_component.params.fk_chain.hinge = False
+            bone.cloudrig_component.params.chain.sharp = True
+            bone.cloudrig_component.params.chain.tip_control = True
+            bone.cloudrig_component.params.ik_chain.use_pole = True
+        return {"FINISHED"}
 classes = [bfl_byanon_OT_makeArm,
     bfl_byanon_OT_makeFingers,
     bfl_byanon_OT_makeNeck,
@@ -920,8 +975,8 @@ classes = [bfl_byanon_OT_makeArm,
     bfl_byanon_OT_90roll,
     bfl_byanon_OT_0roll,
     bfl_byanon_OT_genericText,
-    ]        
-
+    BFL_CloudRig_makefingers,
+    ]      
 def register():
     for i in classes:
         bpy.utils.register_class(i)

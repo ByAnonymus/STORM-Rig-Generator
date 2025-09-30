@@ -698,31 +698,12 @@ class STORM_Rig_Generator(bpy.types.Operator):
         edit_bones["IK2-finger21.L"].select_head = True
         edit_bones["IK2-finger31.L"].select_head = True
         edit_bones["IK2-finger41.L"].select_head = True
-
-        # edit_bones["IK2-finger11.L"].select_tail = True
-        # edit_bones["IK2-finger21.L"].select_tail = True
-        # edit_bones["IK2-finger31.L"].select_tail = True
-        # edit_bones["IK2-finger41.L"].select_tail = True
-
+        
         edit_bones["IK-M-finger12.L"].select_head = True
         edit_bones["IK-M-finger22.L"].select_head = True
         edit_bones["IK-M-finger32.L"].select_head = True
         edit_bones["IK-M-finger42.L"].select_head = True
 
-        # edit_bones["IK-M-finger12.L"].select_tail = True
-        # edit_bones["IK-M-finger22.L"].select_tail = True
-        # edit_bones["IK-M-finger32.L"].select_tail = True
-        # edit_bones["IK-M-finger42.L"].select_tail = True
-
-        # edit_bones["IK2-finger11.L"].select= True
-        # edit_bones["IK2-finger21.L"].select= True
-        # edit_bones["IK2-finger31.L"].select= True
-        # edit_bones["IK2-finger41.L"].select= True
-
-        # edit_bones["IK-M-finger12.L"].select = True
-        # edit_bones["IK-M-finger22.L"].select = True
-        # edit_bones["IK-M-finger32.L"].select = True
-        # edit_bones["IK-M-finger42.L"].select = True
         bpy.ops.transform.translate(value=(0, 0, -0.00009), orient_type='NORMAL')
 
         # bpy.ops.object.mode_set(mode="POSE")
