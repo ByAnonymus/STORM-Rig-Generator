@@ -62,8 +62,7 @@ def physics_generate():
         # build pairs
         if len(pbone.children) != 1:
             for cbone in pbone.children:
-                if getattr(cbone.parent, "cloudrig_component", None) is not None:
-                    cbone.parent.cloudrig_component.component_type = "Bone Copy"
+                cbone["parent"] = cbone.parent.name
                 if getattr(cbone, "cloudrig_component", None) is not None:
                     cbone.cloudrig_component.component_type = "Chain: Physics"
                 for child in cbone.children_recursive:
@@ -77,6 +76,8 @@ def physics_generate():
         else:
             try:
                 pbone["physics_bone"] = True
+                pbone["parent"] = pbone.parent.name
+
             except Exception:
                 pass
             if comp is not None:
@@ -214,6 +215,8 @@ def physics_generate():
         pass
 
     print("physics_generate: done")
+    bpy.context.view_layer.objects.active = meta_obj
+    meta_obj.select_set(True)
 
 # run
 # physics_generate()
