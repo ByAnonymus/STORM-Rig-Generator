@@ -526,7 +526,12 @@ class bfl_byanon_OT_makeExtras(ot):
     def execute(self, context):
         bone_col = context.object.data.collections['Extras']
         for bone in context.object.pose.bones:
-            if bone.get('marked'): continue
+            cloud = False
+            for bone_parent in bone.parent_recursive:
+                if bone_parent.cloudrig_component.component_type == "Chain: Physics":
+                    cloud = True
+                    break
+            if bone.get('marked') or bone.cloudrig_component.component_type == "Chain: Physics" or cloud: continue
             for col in bone.bone.collections:
                 col.unassign(bone.bone)
             bone_col.assign(bone.bone)
@@ -985,6 +990,3 @@ def register():
 def unregister():
     for i in reversed(classes):
         bpy.utils.unregister_class(i)
-        
-if __name__ == '__main__':
-    register()
