@@ -215,6 +215,7 @@ def physics_generate():
         pass
 
     print("physics_generate: done")
+    bpy.data.objects.remove(new_object)
     bpy.context.view_layer.objects.active = meta_obj
     meta_obj.select_set(True)
 

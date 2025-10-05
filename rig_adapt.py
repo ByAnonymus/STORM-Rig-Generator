@@ -3,6 +3,10 @@ from pathlib import Path
 from .rig_adapt_spine import copy_bone_props
 from .physics import physics_generate
 mode = bpy.ops.object.mode_set
+def isolate(context: bpy.types.Context, object):
+    [obj.select_set(False) for obj in bpy.data.objects]
+    object.select_set(True)
+    context.view_layer.objects.active = object
 
 # from .rigi_all import rigi_all as rigi
 #  bpy.context.view_layer.objects.active = bpy.data.objects[bpy.context.scene.byanon_active_storm_armature.name]
@@ -93,11 +97,11 @@ def bonemerge(i, obj, **kwargs):
         if not proceed:
             continue
         if subtarget_name == 1:
-            subtarget = ii.name.removesuffix(".001")
+            subtarget = ii.name
         elif subtarget_name == 2:
             subtarget = ii.name
         else:
-            subtarget = ii.name + ".001"
+            subtarget = ii.name
         if ii.constraints.get(loc) == None: # check if constraints already exist. if so, swap targets. if not, create constraints.
             ii.constraints.new('COPY_SCALE').name = scale
             ii.constraints.new('COPY_LOCATION').name = loc
@@ -108,6 +112,9 @@ def bonemerge(i, obj, **kwargs):
         LOC.subtarget = subtarget
         ROT.target = obj
         ROT.subtarget = subtarget
+        # ROT.target_space = 'LOCAL_WITH_PARENT'
+        # ROT.owner_space = 'LOCAL'
+
         SCALE = ii.constraints[scale]
         SCALE.target = obj
         SCALE.subtarget = subtarget 
@@ -158,41 +165,41 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         ParentDict = os.path.join(PATH, 'ParentDict.json')
         bpy.ops.byanon.storm_rig_generator()
         # return {"FINISHED"}
-        bpy.data.objects.remove(new_object)
-        bpy.data.armatures.remove(new_armature)
+        # bpy.data.objects.remove(new_object)
+        # bpy.data.armatures.remove(new_armature)
 
         new_object = bpy.data.objects[context.scene.byanon_active_storm_armature.name].copy()
         context.collection.objects.link(new_object)
         new_armature = new_object.data.id_data.copy()
         new_object.data = new_armature 
-        for bone in new_object.pose.bones:
-            bone.name += ".001"
+        # for bone in new_object.pose.bones:
+        #     bone.name += ".001"
 
-        new_object.select_set(True)
-        bpy.ops.object.join()
+        # new_object.select_set(True)
+        # bpy.ops.object.join()
+        
         bpy.data.armatures.remove(new_armature)
-        set_parents()
         bpy.ops.byanon.storm_rig_bonemerge()
         bones = context.scene.byanon_active_storm_rig.bones
         edit_bones = context.scene.byanon_active_storm_rig.edit_bones
         bpy.ops.object.mode_set(mode="EDIT", toggle=False)
-        for bone in bones:
-            extras = False
-            if bpy.app.version[0] > 3:
-                if "Extras" in bone.collections:
-                    extras = True
-            else:
-                extras = bone.layers[24]
-            if extras:
-                if ".L" in bone.name or "left" in bone.name:
-                    if bones.get("l " + bone.parent.name.removesuffix(".L").removeprefix("DEF-").removeprefix("ORG-") +".001"):
-                        edit_bones[bone.name].parent = edit_bones["l " + bone.parent.name.removesuffix(".L").removeprefix("DEF-").removeprefix("ORG-") +".001"]
-                elif ".R" in bone.name or "right" in bone.name:
-                    if bones.get("r " + bone.parent.name.removesuffix(".R").removeprefix("DEF-").removeprefix("ORG-") +".001"):
-                        edit_bones[bone.name].parent = edit_bones["r " + bone.parent.name.removesuffix(".R").removeprefix("DEF-").removeprefix("ORG-") +".001"]
-                else:
-                    if bones.get(bone.parent.name.removeprefix("DEF-").removeprefix("ORG-") +".001"):
-                        edit_bones[bone.name].parent = edit_bones[bone.parent.name.removeprefix("DEF-").removeprefix("ORG-") +".001"]
+        # for bone in bones:
+        #     extras = False
+        #     if bpy.app.version[0] > 3:
+        #         if "Extras" in bone.collections:
+        #             extras = True
+        #     else:
+        #         extras = bone.layers[24]
+        #     if extras:
+        #         if ".L" in bone.name or "left" in bone.name:
+        #             if bones.get("l " + bone.parent.name.removesuffix(".L").removeprefix("DEF-").removeprefix("ORG-") +".001"):
+        #                 edit_bones[bone.name].parent = edit_bones["l " + bone.parent.name.removesuffix(".L").removeprefix("DEF-").removeprefix("ORG-") +".001"]
+        #         elif ".R" in bone.name or "right" in bone.name:
+        #             if bones.get("r " + bone.parent.name.removesuffix(".R").removeprefix("DEF-").removeprefix("ORG-") +".001"):
+        #                 edit_bones[bone.name].parent = edit_bones["r " + bone.parent.name.removesuffix(".R").removeprefix("DEF-").removeprefix("ORG-") +".001"]
+        #         else:
+        #             if bones.get(bone.parent.name.removeprefix("DEF-").removeprefix("ORG-") +".001"):
+        #                 edit_bones[bone.name].parent = edit_bones[bone.parent.name.removeprefix("DEF-").removeprefix("ORG-") +".001"]
         #context.active_object.data.edit_bones["l forearm"].parent.tail = context.active_object.data.edit_bones["l forearm"].head
         bpy.ops.object.mode_set(mode="POSE",toggle=False)
         return {"FINISHED"}
@@ -583,7 +590,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
         
         for bone in bones:
             if bone.get('extra') and not bone.get('physics_bone'):
-                edit_bones[bone.name].length *= 15
+                edit_bones[bone.name].length *= 5
         bpy.ops.armature.symmetrize(direction='NEGATIVE_X')
 
         for bone in edit_bones:
@@ -616,8 +623,31 @@ class STORM_Rig_Generator(bpy.types.Operator):
         bpy.ops.bfl_byanon.makeshoulder(isLeft=False)
         bones.active = None
         bones["clavicle.R"].select = False
-
+        new_obj = bpy.data.objects[context.scene.byanon_active_storm_armature.name].copy()
+        new_armature = new_obj.data.copy()
+        new_obj.data = new_armature
+        context.scene.rigiall_props_byanon.parasite = new_obj
+        context.scene.rigiall_props_byanon.host = context.active_object
+        context.scene.collection.objects.link(new_obj)
+        for bone in bones:
+            if bone.name.endswith(".L"):
+                bone.name = "l "+bone.name.removesuffix(".L")
+            elif bone.name.endswith(".R"):
+                bone.name = "r "+bone.name.removesuffix(".R")
+        bpy.ops.bfl_byanon.merge()
+        for bone in bones:
+            if bone.name not in bone.id_data.collections_all["underlying"].bones:
+                # if bone.name.startswith("l "):
+                #     bone.name = bone.name.removeprefix("l ")+".L"
+                if bone.name.startswith("!l "):
+                    bone.name = "!" +bone.name.removeprefix("!l ")+".L"
+                # elif bone.name.startswith("r "):
+                #     bone.name = bone.name.removeprefix("r ")+".R"
+                elif bone.name.startswith("!r "):
+                    bone.name = "!" +bone.name.removeprefix("!r ")+".R"
         bpy.ops.pose.rigify_generate()
+        bpy.ops.bfl_byanon.tweakarmature()
+        # return {"FINISHED"}
         obj_rigify = context.active_object
         mode(mode="OBJECT")
         context.active_object.select_set(False)
@@ -630,6 +660,13 @@ class STORM_Rig_Generator(bpy.types.Operator):
                 context.view_layer.objects.active = cr_object
                 context.active_object.select_set(True)
                 bpy.ops.pose.cloudrig_generate()
+                for i in bpy.data.collections[cr_object.name+"-widgets"].all_objects:
+                    bpy.data.collections[cr_object.name+"-widgets"].objects.unlink(i)
+                    # bpy.context.scene.collection.objects.unlink(i)
+                bpy.data.collections.remove(bpy.data.collections[cr_object.name+"-widgets"])
+                bpy.data.armatures.remove(cr_object.data)
+                # bpy.data.objects.remove(cr_object)
+
         mode(mode="OBJECT")
         context.active_object.select_set(False)
         for cr_object in context.view_layer.objects:
@@ -1483,9 +1520,6 @@ class STORM_Rig_Generator(bpy.types.Operator):
         for bone in pose_bones:
             if bone.get('parent') and "ORG" not in bone.name:
                 dct["CR_"+"ROOT-"+bone.name.removeprefix("CR_")] = "ORG-"+bone["parent"]
-            elif bone.name.startswith("CR_FK"):
-                copy_bone_props(bone.name+"_track",bone, set_as_parent = True)
-                
             #     const = bone.constraints.new('LOCKED_TRACK')
             #     const.target = bone.constraints.get("Damped Track").target
             #     const.subtarget = bone.constraints.get("Damped Track").subtarget
@@ -1498,7 +1532,19 @@ class STORM_Rig_Generator(bpy.types.Operator):
         for bone, parent in dct.items():
             edit_bones[bone].parent = edit_bones[parent]
 
-        bpy.ops.object.mode_set(mode='POSE')
+        mode(mode='OBJECT')
+        for cobj in obj_rigify.children:
+            isolate(context,cobj)
+            mode(mode='EDIT')
+            bpy.ops.mesh.select_all(action='SELECT')
+            bpy.ops.transform.translate(value=(-0, -0.005, -0), orient_type='LOCAL')
+            bpy.ops.mesh.select_all(action='DESELECT')
+            cobj.hide_viewport = True
+            cobj.hide_render = True
+
+            mode(mode='OBJECT')
+        isolate(context,obj_rigify)
+        
         return {"FINISHED"}
 
 class STORM_Rig_Bonemerger(bpy.types.Operator):

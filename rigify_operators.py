@@ -92,7 +92,7 @@ class bfl_byanon_OT_makeArm(ot):
     
     def execute(self, context):
         obj = context.object
-        props = context.scene.rigiall_props
+        props = context.scene.rigiall_props_byanon
         col = context.object.data.collections
         
         if self.isLeft:
@@ -177,7 +177,7 @@ class bfl_byanon_OT_makeLeg(bfl_byanon_OT_genericText):
     
     def execute(self, context):
         obj = context.object
-        props = context.scene.rigiall_props
+        props = context.scene.rigiall_props_byanon
         col = context.object.data.collections
         bones = context.selected_pose_bones
         
@@ -262,7 +262,7 @@ class bfl_byanon_OT_makeSpine(bfl_byanon_OT_genericText):
     
     def execute(self, context):
         obj = context.object
-        props = context.scene.rigiall_props
+        props = context.scene.rigiall_props_byanon
         bone_col = context.object.data.collections
         bones = bpy.context.selected_pose_bones
         for bone in bones:
@@ -307,7 +307,7 @@ class bfl_byanon_OT_makeNeck(ot):
 
     def execute(self, context):    
         obj = context.object
-        props = context.scene.rigiall_props
+        props = context.scene.rigiall_props_byanon
         bone_col = context.object.data.collections
         bones = bpy.context.selected_pose_bones
         for bone in bones:
@@ -368,7 +368,7 @@ class bfl_byanon_OT_makeFingers(bfl_byanon_OT_genericText):
 
     def execute(self, context):
         obj = context.object
-        props = context.scene.rigiall_props
+        props = context.scene.rigiall_props_byanon
         bone_col = context.object.data.collections
         bones = bpy.context.selected_pose_bones
         for bone in bones:
@@ -470,7 +470,7 @@ class bfl_byanon_OT_makeShoulder(ot):
     
     def execute(self, context):
         obj = bpy.context.object
-        props = context.scene.rigiall_props
+        props = context.scene.rigiall_props_byanon
         bone = bpy.context.active_pose_bone
         if props.fix_symmetry:
             for keyword in props.keywords.split(','):
@@ -517,7 +517,7 @@ class bfl_byanon_OT_makeExtras(ot):
             ("sphere", "sphere", "", "", 15),
             ("teeth", "teeth", "", "", 16),
         ),
-        name = 'Widget', default='cube'
+        name = 'Widget', default='sphere'
     )
     
     def invoke(self, context, event):
@@ -531,7 +531,8 @@ class bfl_byanon_OT_makeExtras(ot):
                 if bone_parent.cloudrig_component.component_type == "Chain: Physics":
                     cloud = True
                     break
-            if bone.get('marked') or bone.cloudrig_component.component_type == "Chain: Physics" or cloud: continue
+            # if bone.get('marked') or bone.cloudrig_component.component_type == "Chain: Physics" or cloud: continue
+            if bone.get('marked'): continue
             for col in bone.bone.collections:
                 col.unassign(bone.bone)
             bone_col.assign(bone.bone)
@@ -610,7 +611,7 @@ class bfl_byanon_OT_initialize(ot):
             ("Leg.R (IK)", "IK", 11, ""),
             ("Leg.R (FK)", "FK", 12, "(FK)"),
             ("Leg.R (Tweak)", "Tweak", 13, "(Tweak)"),
-            ('Extras', 'Extra', 17, ''),
+            ('Extras', 'Special', 17, ''),
             ("Root", "Root", 16, ""),
         )
         for name, color, row, title in layers:
@@ -696,11 +697,11 @@ class bfl_byanon_OT_merge(ot):
 
     @classmethod
     def poll(cls, context):
-        props = context.scene.rigiall_props
+        props = context.scene.rigiall_props_byanon
         return bool(props.parasite) & bool(props.host)
 
     def execute(self, context):
-        props = context.scene.rigiall_props
+        props = context.scene.rigiall_props_byanon
         parasite: bpy.types.Object = props.parasite
         host: bpy.types.Object = props.host
 
@@ -711,70 +712,77 @@ class bfl_byanon_OT_merge(ot):
         isolate(context, parasite)
         mode(mode='EDIT')
 
-        for bone in parasite.data.edit_bones:
-            bone: bpy.types.EditBone
-            if (hbone := host.data.bones.get(bone.name)) == None: continue
-            if hbone.get('extra'):
+        # Remove bones that don't exist in host
+        for bone in list(parasite.data.edit_bones):
+            if host.data.bones.get(bone.name) is None:
                 parasite.data.edit_bones.remove(bone)
 
         mode(mode='OBJECT')
 
+        # ✅ Mark both "marked" and "extra" bones with "!"
         for bone in host.data.bones:
-            if not bone.get('marked', False): continue
-            bone.name = '!' + bone.name
+            if bone.get('marked', False) or bone.get('extra', False):
+                bone.name = '!' + bone.name
 
-        current_bones = set(map(lambda a: a.name, host.data.bones))
+        current_bones = {b.name for b in host.data.bones}
+
+        # Temporarily strip "extra" to prevent Blender join issues
+        for bone in parasite.data.bones:
+            if 'extra' in bone:
+                bone['_had_extra'] = True
+                del bone['extra']
 
         parasite.matrix_world = host.matrix_world
         isolate(context, host)
         parasite.select_set(True)
         bpy.ops.object.join()
 
-        new_bones = set(map(lambda a: a.name, host.data.bones)) - current_bones
-        marked = set(map(lambda a: a.name, filter(lambda a: a.get('marked'), host.data.bones)))
-        extras = set(map(lambda a: a.name, filter(lambda a: a.get('extra'), host.data.bones)))
+        # Restore the "extra" property
+        for bone in host.data.bones:
+            if bone.get('_had_extra'):
+                bone['extra'] = True
+                del bone['_had_extra']
 
-        new_col = host.data.collections.new('underlying')
+        # Get newly joined bones
+        new_bones = {b.name for b in host.data.bones} - current_bones
+
+        # Create (or reuse) underlying collection
+        if 'underlying' not in host.data.collections:
+            new_col = host.data.collections.new('underlying')
+        else:
+            new_col = host.data.collections['underlying']
 
         mode(mode='EDIT')
         ebones = host.data.edit_bones
+
+        # Parent and assign bones (works for both normal and extras now)
         for bone in new_bones:
             ebone = ebones.get(bone)
-            if not ebone: continue
-            p_ebone = ebones.get('!'+bone)
-            if not p_ebone:
-                ebones.remove(ebone)
+            if not ebone:
                 continue
-            ebone.parent = p_ebone
+
+            parent_name = '!' + bone
+            if (p_ebone := ebones.get(parent_name)):
+                ebone.parent = p_ebone
             new_col.assign(host.data.bones[bone])
 
-        for bone in extras:
-            ebone = ebones.get(bone)
-            if not ebone: continue
-            if not getattr(ebone.parent, 'name', '').startswith('!'): continue
-            if not (p_ebone := ebones.get(ebone.parent.name[1:])): continue
-            ebone.parent = p_ebone
         mode(mode='POSE')
 
+        # Set up pose bones (same behavior for all bones)
         for bone in new_bones:
             pbone = host.pose.bones.get(bone)
-            if not pbone: continue
+            if not pbone:
+                continue
             pbone.rigify_type = 'basic.raw_copy'
             new_col.assign(pbone.bone)
             pbone['needs_fix'] = True
             pbone.bone['needs_fix'] = True
 
-        for bone in extras:
-            pbone = host.pose.bones.get(bone)
-            if not pbone: continue
-            pbone.rigify_type = 'basic.raw_copy'
-            pbone.rigify_parameters.optional_widget_type = pbone.rigify_parameters.super_copy_widget_type
-            pbone['needs_fix'] = True
-            pbone.bone['needs_fix'] = True
-
         mode(mode='OBJECT')
-
         return {'FINISHED'}
+
+
+
     
 class bfl_byanon_PT_panel(bpy.types.Panel):
     """A Custom Panel in the Viewport Toolbar"""
@@ -784,7 +792,7 @@ class bfl_byanon_PT_panel(bpy.types.Panel):
     bl_category = 'Rigi-All'
     
     def draw(self, context):
-        props = context.scene.rigiall_props
+        props = context.scene.rigiall_props_byanon
         layout = self.layout
         
         #if getattr(context.object, 'type', None) != 'ARMATURE':
@@ -866,7 +874,7 @@ Do not use "Fix Mesh!" It is not required with a merged rig. Instead, use Fix Ar
         op.size = '56'
         op.icons = 'BLANK1'
         op.isLeft = False
-        box.row().prop(context.scene.rigiall_props, 'ik_fingers')
+        box.row().prop(context.scene.rigiall_props_byanon, 'ik_fingers')
         
         layout.row().label(text='Legs')
         box = layout.box()
@@ -970,7 +978,7 @@ classes = [bfl_byanon_OT_makeArm,
     bfl_byanon_OT_makeShoulder,
     bfl_byanon_OT_makeSpine,
     bfl_byanon_OT_makeLeg,
-    bfl_byanon_PT_panel,
+    # bfl_byanon_PT_panel,
     bfl_byanon_OT_makeExtras,
     bfl_byanon_OT_initialize,
     bfl_byanon_OT_tweakMesh,
@@ -985,7 +993,7 @@ classes = [bfl_byanon_OT_makeArm,
 def register():
     for i in classes:
         bpy.utils.register_class(i)
-    bpy.types.Scene.rigiall_props = bpy.props.PointerProperty(type=bfl_byanon_group)
+    bpy.types.Scene.rigiall_props_byanon = bpy.props.PointerProperty(type=bfl_byanon_group)
 
 def unregister():
     for i in reversed(classes):
