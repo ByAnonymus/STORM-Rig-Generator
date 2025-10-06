@@ -218,6 +218,22 @@ def physics_generate():
     bpy.data.objects.remove(new_object)
     bpy.context.view_layer.objects.active = meta_obj
     meta_obj.select_set(True)
-
+    bpy.context.view_layer.objects.active = meta_obj
+    lst = []
+    bpy.ops.object.mode_set(mode='POSE')
+    for bone in meta_obj.pose.bones:
+        if bone.cloudrig_component.component_type == "Chain: Physics":
+            bone["physics_chain_start"] = True
+            lst.append(bone.name)
+    bpy.ops.object.mode_set(mode='EDIT')
+    print("lst: ", lst)
+    for bone_name in lst:
+        bone = meta_obj.data.edit_bones[bone_name]
+        print("lst: ",bone_name)
+        for cbone in bone.children_recursive:
+            print("connect: ",cbone)
+            cbone.use_connect = False
+    bpy.ops.object.mode_set(mode='OBJECT')
+    
 # run
 # physics_generate()
