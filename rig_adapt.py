@@ -76,6 +76,9 @@ def bonemerge(i, obj, **kwargs):
     subtarget_name = kwargs.get("subtarget", 0)
     
     for ii in i.pose.bones:
+        if not obj.pose.bones.get(ii.name):
+            print("NOT FOUND:", ii.name)
+            continue
         if only_1st_layer:
             if bpy.app.version[0]<4:
                 if i.data.bones[ii.name].layers[0]:
@@ -96,12 +99,7 @@ def bonemerge(i, obj, **kwargs):
             proceed = True
         if not proceed:
             continue
-        if subtarget_name == 1:
-            subtarget = ii.name
-        elif subtarget_name == 2:
-            subtarget = ii.name
-        else:
-            subtarget = ii.name
+        subtarget = ii.name
         if ii.constraints.get(loc) == None: # check if constraints already exist. if so, swap targets. if not, create constraints.
             ii.constraints.new('COPY_SCALE').name = scale
             ii.constraints.new('COPY_LOCATION').name = loc
@@ -165,8 +163,8 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         ParentDict = os.path.join(PATH, 'ParentDict.json')
         bpy.ops.byanon.storm_rig_generator()
         # return {"FINISHED"}
-        # bpy.data.objects.remove(new_object)
-        # bpy.data.armatures.remove(new_armature)
+        bpy.data.objects.remove(new_object)
+        bpy.data.armatures.remove(new_armature)
 
         new_object = bpy.data.objects[context.scene.byanon_active_storm_armature.name].copy()
         context.collection.objects.link(new_object)
@@ -1182,6 +1180,9 @@ class STORM_Rig_Generator(bpy.types.Operator):
             context.active_object.data.collections_all["ORG"].assign(bones[f"IK2_{finger}1.L"])
             context.active_object.data.collections_all["ORG"].assign(bones[f"IK2_{finger}2.L"])
             context.active_object.data.collections_all["ORG"].assign(bones[f"{finger}_STR.L"])
+            context.active_object.data.collections_all["ORG"].unassign(bones[f"VIS_{finger}_ik_pole.L"])
+            context.active_object.data.collections_all["ORG"].unassign(bones[f"{finger}_ik_pole.L"])
+
             context.active_object.data.collections_all["Fingers"].assign(bones[f"{finger}_ik_pole.L"])
             context.active_object.data.collections_all["Fingers"].assign(bones[f"VIS_{finger}_ik_pole.L"])
 
@@ -1375,6 +1376,11 @@ class STORM_Rig_Generator(bpy.types.Operator):
             context.active_object.data.collections_all["ORG"].assign(bones[f"IK2_{finger}1.R"])
             context.active_object.data.collections_all["ORG"].assign(bones[f"IK2_{finger}2.R"])
             context.active_object.data.collections_all["ORG"].assign(bones[f"{finger}_STR.R"])
+
+            context.active_object.data.collections_all["ORG"].unassign(bones[f"{finger}_ik_pole.R"])
+            context.active_object.data.collections_all["ORG"].unassign(bones[f"VIS_{finger}_ik_pole.R"])
+
+
             context.active_object.data.collections_all["Fingers"].assign(bones[f"{finger}_ik_pole.R"])
             context.active_object.data.collections_all["Fingers"].assign(bones[f"VIS_{finger}_ik_pole.R"])
 
@@ -1670,11 +1676,19 @@ class STORM_Rig_Transfer(bpy.types.Operator):
         storm_arm = context.scene.byanon_active_storm_armature
         storm_rig = context.scene.byanon_active_storm_rig
 
-        bpy.data.objects[storm_rig.name].pose.bones["thigh_parent.L"]["IK_FK"] = 0.0
-        bpy.data.objects[storm_rig.name].pose.bones["thigh_parent.R"]["IK_FK"] = 0.0
-        bpy.data.objects[storm_rig.name].pose.bones["upperarm_parent.L"]["IK_FK"] = 0.0
-        bpy.data.objects[storm_rig.name].pose.bones["upperarm_parent.R"]["IK_FK"] = 0.0
+        bpy.data.objects[storm_rig.name].pose.bones["thigh_parent.L"]["IK_FK"] = 1.0
+        bpy.data.objects[storm_rig.name].pose.bones["thigh_parent.R"]["IK_FK"] = 1.0
+        bpy.data.objects[storm_rig.name].pose.bones["upperarm_parent.L"]["IK_FK"] = 1.0
+        bpy.data.objects[storm_rig.name].pose.bones["upperarm_parent.R"]["IK_FK"] = 1.0
+        bpy.data.objects[storm_rig.name].pose.bones["upperarm_parent.L"]["IK_Stretch"] = 0
+        bpy.data.objects[storm_rig.name].pose.bones["upperarm_parent.L"]["pole_vector"] = True
+        bpy.data.objects[storm_rig.name].pose.bones["upperarm_parent.R"]["IK_Stretch"] = 0
+        bpy.data.objects[storm_rig.name].pose.bones["upperarm_parent.R"]["pole_vector"] = True
 
+        bpy.data.objects[storm_rig.name].pose.bones["thigh_parent.L"]["IK_Stretch"] = 0
+        bpy.data.objects[storm_rig.name].pose.bones["thigh_parent.L"]["pole_vector"] = True
+        bpy.data.objects[storm_rig.name].pose.bones["thigh_parent.R"]["IK_Stretch"] = 0
+        bpy.data.objects[storm_rig.name].pose.bones["thigh_parent.R"]["pole_vector"] = True
         new_object = bpy.data.objects[storm_rig.name].copy()
         new_object.name = new_object.name.removesuffix(".001") + "_INT"
         context.collection.objects.link(new_object)
@@ -1691,10 +1705,10 @@ class STORM_Rig_Transfer(bpy.types.Operator):
         pose_bones = context.active_object.pose.bones
         bones = context.active_object.data.bones
 
-        # pose_bones["thigh_parent.L"]["IK_FK"] = 1.0
-        # pose_bones["thigh_parent.R"]["IK_FK"] = 1.0
-        # pose_bones["upperarm_parent.L"]["IK_FK"] = 1.0
-        # pose_bones["upperarm_parent.R"]["IK_FK"] = 1.0
+        pose_bones["thigh_parent.L"]["IK_FK"] = 1.0
+        pose_bones["thigh_parent.R"]["IK_FK"] = 1.0
+        pose_bones["upperarm_parent.L"]["IK_FK"] = 1.0
+        pose_bones["upperarm_parent.R"]["IK_FK"] = 1.0
 
         for bone in pose_bones:
             bone.location.zero()
@@ -1718,6 +1732,28 @@ class STORM_Rig_Transfer(bpy.types.Operator):
             for con in bone.constraints:
                 if con.name == "Copy Scale Parent":
                     bone.constraints.remove(con)
+        edit_bones["finger0_ik.L"].parent = edit_bones["l finger02"]
+        edit_bones["finger1_ik.L"].parent = edit_bones["l finger12"]
+        edit_bones["finger2_ik.L"].parent = edit_bones["l finger22"]
+        edit_bones["finger3_ik.L"].parent = edit_bones["l finger32"]
+        edit_bones["finger4_ik.L"].parent = edit_bones["l finger42"]
+        edit_bones["finger0_ik_pole.L"].parent = edit_bones["l finger01"]
+        edit_bones["finger1_ik_pole.L"].parent = edit_bones["l finger11"]
+        edit_bones["finger2_ik_pole.L"].parent = edit_bones["l finger21"]
+        edit_bones["finger3_ik_pole.L"].parent = edit_bones["l finger31"]
+        edit_bones["finger4_ik_pole.L"].parent = edit_bones["l finger41"]
+
+        edit_bones["finger0_ik.R"].parent = edit_bones["r finger02"]
+        edit_bones["finger1_ik.R"].parent = edit_bones["r finger12"]
+        edit_bones["finger2_ik.R"].parent = edit_bones["r finger22"]
+        edit_bones["finger3_ik.R"].parent = edit_bones["r finger32"]
+        edit_bones["finger4_ik.R"].parent = edit_bones["r finger42"]
+        edit_bones["finger0_ik_pole.R"].parent = edit_bones["r finger01"]
+        edit_bones["finger1_ik_pole.R"].parent = edit_bones["r finger11"]
+        edit_bones["finger2_ik_pole.R"].parent = edit_bones["r finger21"]
+        edit_bones["finger3_ik_pole.R"].parent = edit_bones["r finger31"]
+        edit_bones["finger4_ik_pole.R"].parent = edit_bones["r finger41"]
+
         edit_bones["hand_ik.L"].parent = edit_bones["l hand"]
         edit_bones["clavicle.L"].parent = edit_bones["l clavicle"]
         edit_bones["upperarm_fk.L"].parent = edit_bones["l upperarm"]
