@@ -908,6 +908,15 @@ class STORM_Rig_Generator(bpy.types.Operator):
         const.target = context.active_object
         const.subtarget = "IK-STR-upperarm.L"
         const.head_tail = 1
+        driver = const.driver_add("influence").driver
+        driver.type = 'SCRIPTED'
+        driver.expression = f"1-ik"
+        var = driver.variables.new()
+        var.name = "ik"
+        var.type = "SINGLE_PROP"
+        var.targets[0].id_type = "OBJECT"
+        var.targets[0].id = context.active_object
+        var.targets[0].data_path = 'pose.bones["upperarm_parent.L"]["IK_FK"]'
 
         bpy.ops.object.mode_set(mode='EDIT')
         distance = edit_bones["IK-STR-upperarm.L"].length
@@ -978,6 +987,15 @@ class STORM_Rig_Generator(bpy.types.Operator):
         const.target = context.active_object
         const.subtarget = "IK-STR-upperarm.R"
         const.head_tail = 1
+        driver = const.driver_add("influence").driver
+        driver.type = 'SCRIPTED'
+        driver.expression = f"1-ik"
+        var = driver.variables.new()
+        var.name = "ik"
+        var.type = "SINGLE_PROP"
+        var.targets[0].id_type = "OBJECT"
+        var.targets[0].id = context.active_object
+        var.targets[0].data_path = 'pose.bones["upperarm_parent.R"]["IK_FK"]'
 
         bpy.ops.object.mode_set(mode='EDIT')
         distance = edit_bones["IK-STR-upperarm.R"].length
