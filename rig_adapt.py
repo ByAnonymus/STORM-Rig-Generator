@@ -581,7 +581,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
         bpy.ops.transform.translate(value=(0, 0, -0.000001), orient_type='NORMAL')
 
         for bone in bones:
-            if bone.name.endswith(".L"):
+            if bone.name.endswith(".L") and "underlying" not in bone.collections and not bone.get("physics_bone"):
                 edit_bones[bone.name].select = True
                 edit_bones[bone.name].select_head = True
                 edit_bones[bone.name].select_tail = True
@@ -645,7 +645,6 @@ class STORM_Rig_Generator(bpy.types.Operator):
                     bone.name = "!" +bone.name.removeprefix("!r ")+".R"
         bpy.ops.pose.rigify_generate()
         bpy.ops.bfl_byanon.tweakarmature()
-        # return {"FINISHED"}
         obj_rigify = context.active_object
         mode(mode="OBJECT")
         context.active_object.select_set(False)
@@ -691,8 +690,9 @@ class STORM_Rig_Generator(bpy.types.Operator):
 
         bpy.ops.object.mode_set(mode="EDIT")
         for bone in bones:
-            if not bool(bones.get(bone.name.replace("!", ""))):
+            if not (bool(bones.get(bone.name.replace("!", ""))) or "Extras" in bone.collections):
                 bone.name = bone.name.replace("!", "")
+        # return {"FINISHED"}
         edit_bones["foot_heel_ik.L"].roll = -ang
         edit_bones["foot_ik.L"].roll = -ang
         edit_bones["foot_fk.L"].roll = -ang
@@ -1557,7 +1557,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
         cr_object.select_set(True)
         bpy.ops.object.join()
         for bone in bones:
-            if not bones.get(bone.name.replace("!", "")):
+            if not (bones.get(bone.name.replace("!", "")) or "Extras" in bone.collections):
                 bone.name = bone.name.replace("!", "")
         for i in obj_rigify.children:
             i.modifiers["Armature"].object = obj_rigify
@@ -1642,7 +1642,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
         obj_rigify.data.collections.remove(obj_rigify.data.collections_all["Mechanism Bones"])
         mode(mode='POSE')
         for bone in pose_bones:
-            if bone.name.startswith("!") and bone.get("physics_bone"):
+            if "Extras" in bone.bone.collections and bone.get("physics_bone"):
                 bone.custom_shape_scale_xyz[0] *= 0.5
                 bone.custom_shape_scale_xyz[1] *= 0.5
                 bone.custom_shape_scale_xyz[2] *= 0.5
