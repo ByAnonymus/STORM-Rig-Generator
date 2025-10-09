@@ -542,6 +542,8 @@ class STORM_Rig_Generator(bpy.types.Operator):
         bpy.ops.object.mode_set(mode="POSE")
         physics_generate()
         bpy.ops.bfl_byanon.extras()
+        for bone in pose_bones:
+            bone.rigify_parameters.super_copy_widget_type = "cube"
         # return {"FINISHED"}
 
         bpy.ops.object.mode_set(mode="EDIT")
@@ -1606,6 +1608,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
             edit_bones[bone].parent = edit_bones[parent]
 
         for bone in lst:
+            print("error bone: ",bone)
             copy_bone_props(bone+"_parent", edit_bones[bone], set_as_parent = True, parent = edit_bones[bone].parent.name)
             
         mode(mode='POSE')
@@ -1658,12 +1661,22 @@ class STORM_Rig_Generator(bpy.types.Operator):
         obj_rigify.data.collections.remove(obj_rigify.data.collections_all["Deform Bones"])
         obj_rigify.data.collections.remove(obj_rigify.data.collections_all["Original Bones"])
         obj_rigify.data.collections.remove(obj_rigify.data.collections_all["Mechanism Bones"])
+        obj_rigify.data.collections_all["FK Controls"].name = "FK Controls (DO NOT USE)"
+        obj_rigify.data.collections_all["FK Controls (DO NOT USE)"].is_visible = False
+        obj_rigify.data.collections_all["FK Secondary"].name = "FK Controls"
+        obj_rigify.data.collections_all["Stretch Controls"].is_visible = False
+
+
         mode(mode='POSE')
         for bone in pose_bones:
             if "Extras" in bone.bone.collections and bone.get("physics_bone"):
-                bone.custom_shape_scale_xyz[0] *= 0.5
-                bone.custom_shape_scale_xyz[1] *= 0.5
-                bone.custom_shape_scale_xyz[2] *= 0.5
+                bone.custom_shape_scale_xyz[0] *= 0.25
+                bone.custom_shape_scale_xyz[1] *= 0.25
+                bone.custom_shape_scale_xyz[2] *= 0.25
+            elif "FK-PSX" in bone.name:
+                bone.custom_shape_scale_xyz[0] *= 5
+                bone.custom_shape_scale_xyz[1] *= 5
+                bone.custom_shape_scale_xyz[2] *= 5
 
         return {"FINISHED"}
 

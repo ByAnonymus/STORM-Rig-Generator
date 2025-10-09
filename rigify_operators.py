@@ -611,7 +611,7 @@ class bfl_byanon_OT_initialize(ot):
             ("Leg.R (IK)", "IK", 11, ""),
             ("Leg.R (FK)", "FK", 12, "(FK)"),
             ("Leg.R (Tweak)", "Tweak", 13, "(Tweak)"),
-            ('Extras', 'Special', 17, ''),
+            ('Extras', 'Extra', 17, ''),
             ("Root", "Root", 16, ""),
         )
         for name, color, row, title in layers:
