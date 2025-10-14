@@ -652,21 +652,24 @@ class STORM_Rig_Generator(bpy.types.Operator):
         context.active_object.select_set(False)
         context.view_layer.objects.active = obj
         context.active_object.select_set(True)
-        mode(mode="POSE")
+        # mode(mode="OBJECT")
+
         # bpy.context.scene.rigiall_props.ik_fingers = True
         for cr_object in context.view_layer.objects:
             if "_CR." in cr_object.name and not cr_object.name.startswith("RIG"):
                 context.view_layer.objects.active = cr_object
                 context.active_object.select_set(True)
                 bpy.ops.pose.cloudrig_generate()
-                for i in bpy.data.collections[cr_object.name+"-widgets"].all_objects:
+                mode(mode="OBJECT")
+
+                for i in bpy.data.collections[cr_object.name+"-widgets"].objects:
                     bpy.data.collections[cr_object.name+"-widgets"].objects.unlink(i)
                     # bpy.context.scene.collection.objects.unlink(i)
                 bpy.data.collections.remove(bpy.data.collections[cr_object.name+"-widgets"])
                 bpy.data.armatures.remove(cr_object.data)
                 # bpy.data.objects.remove(cr_object)
 
-        mode(mode="OBJECT")
+        # mode(mode="OBJECT")
         context.active_object.select_set(False)
         for cr_object in context.view_layer.objects:
             if "_CR." in cr_object.name and cr_object.name.startswith("RIG"):

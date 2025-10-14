@@ -47,6 +47,10 @@ def register():
         name="Legacy Spine Control (only for 3.6)",
         default=False
     )
+    bpy.types.Scene.byanon_finger_toggle = bpy.props.BoolProperty(
+        name="Fingers",
+        default=False
+    )
 
 
 def unregister():
@@ -55,3 +59,4 @@ def unregister():
     del bpy.types.Scene.byanon_active_storm_armature
     del bpy.types.Scene.byanon_active_storm_rig
     del bpy.types.Scene.byanon_spine_toggle
+    del bpy.types.Scene.byanon_finger_toggle
