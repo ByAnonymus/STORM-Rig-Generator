@@ -742,308 +742,315 @@ class STORM_Rig_Generator(bpy.types.Operator):
         edit_bones["MCH-heel_roll1.R"].roll = ang
         edit_bones["foot_tweak.R"].roll = ang
 
-        ik_str_thigh = edit_bones.new("IK-STR-thigh.L")
-        ik_str_thigh.head = edit_bones["thigh_ik.L"].head
-        ik_str_thigh.tail = edit_bones["foot_ik.L"].head
-        ik_str_thigh.parent = edit_bones["MCH-thigh_parent.L"]
-        bpy.ops.object.mode_set(mode='POSE')
-        bones.id_data.collections_all["MCH"].assign(bones["IK-STR-thigh.L"])
-        constraints = pose_bones["IK-STR-thigh.L"].constraints
-        const = constraints.new('STRETCH_TO')
-        const.target = context.active_object
-        const.subtarget = "MCH-thigh_ik_target.L"
-        const = constraints.new('LIMIT_SCALE')
-        const.use_min_y = True
-        const.use_max_y = True
-        const.max_y = 1.0
-        const.owner_space = 'LOCAL'
+        # ik_str_thigh = edit_bones.new("IK-STR-thigh.L")
+        # ik_str_thigh.head = edit_bones["thigh_ik.L"].head
+        # ik_str_thigh.tail = edit_bones["foot_ik.L"].head
+        # ik_str_thigh.parent = edit_bones["MCH-thigh_parent.L"]
+        # bpy.ops.object.mode_set(mode='POSE')
+        # bones.id_data.collections_all["MCH"].assign(bones["IK-STR-thigh.L"])
+        # constraints = pose_bones["IK-STR-thigh.L"].constraints
+        # const = constraints.new('STRETCH_TO')
+        # const.target = context.active_object
+        # const.subtarget = "MCH-thigh_ik_target.L"
+        # const = constraints.new('LIMIT_SCALE')
+        # const.use_min_y = True
+        # const.use_max_y = True
+        # const.max_y = 1.0
+        # const.owner_space = 'LOCAL'
 
-        driver = const.driver_add("influence").driver
-        driver.type = 'SCRIPTED'
-        driver.expression = "abs(1-stretch)"
-        var = driver.variables.new()
-        var.name = "stretch"
-        var.type = "SINGLE_PROP"
-        var.targets[0].id_type = "OBJECT"
-        var.targets[0].id = context.active_object
-        var.targets[0].data_path = 'pose.bones["thigh_parent.L"]["IK_Stretch"]'
+        # driver = const.driver_add("influence").driver
+        # driver.type = 'SCRIPTED'
+        # driver.expression = "abs(1-stretch)"
+        # var = driver.variables.new()
+        # var.name = "stretch"
+        # var.type = "SINGLE_PROP"
+        # var.targets[0].id_type = "OBJECT"
+        # var.targets[0].id = context.active_object
+        # var.targets[0].data_path = 'pose.bones["thigh_parent.L"]["IK_Stretch"]'
         
-        constraints = pose_bones["MCH-foot_tweak.L"].constraints
-        const = constraints.new('COPY_LOCATION')
-        const.target = context.active_object
-        const.subtarget = "IK-STR-thigh.L"
-        const.head_tail = 1
+        # constraints = pose_bones["MCH-foot_tweak.L"].constraints
+        # const = constraints.new('COPY_LOCATION')
+        # const.target = context.active_object
+        # const.subtarget = "IK-STR-thigh.L"
+        # const.head_tail = 1
 
-        bpy.ops.object.mode_set(mode='EDIT')
-        distance = edit_bones["IK-STR-thigh.L"].length
-        bpy.ops.object.mode_set(mode='POSE')
-        pose_bones["MCH-thigh_ik_target.L"].constraints.remove(pose_bones["MCH-thigh_ik_target.L"].constraints["Limit Distance"])
-        constraints = pose_bones["MCH-calf_tweak.L"].constraints
-        const = constraints.new('COPY_LOCATION')
-        const.target = context.active_object
-        const.subtarget = "IK-STR-thigh.L"
-        const.head_tail = .5
-        driver = const.driver_add("influence").driver
-        driver.type = 'SCRIPTED'
-        driver.expression = f"(1-ik) * (1-stretch) * (distance > {distance})"
-        var = driver.variables.new()
-        var.name = "stretch"
-        var.type = "SINGLE_PROP"
-        var.targets[0].id_type = "OBJECT"
-        var.targets[0].id = context.active_object
-        var.targets[0].data_path = 'pose.bones["thigh_parent.L"]["IK_Stretch"]'
+        # bpy.ops.object.mode_set(mode='EDIT')
+        # distance = edit_bones["IK-STR-thigh.L"].length
+        # bpy.ops.object.mode_set(mode='POSE')
+        # pose_bones["MCH-thigh_ik_target.L"].constraints.remove(pose_bones["MCH-thigh_ik_target.L"].constraints["Limit Distance"])
+        # constraints = pose_bones["MCH-calf_tweak.L"].constraints
+        # const = constraints.new('COPY_LOCATION')
+        # const.target = context.active_object
+        # const.subtarget = "IK-STR-thigh.L"
+        # const.head_tail = .5
+        # driver = const.driver_add("influence").driver
+        # driver.type = 'SCRIPTED'
+        # driver.expression = f"(1-ik) * (1-stretch) * (distance > {distance})"
+        # var = driver.variables.new()
+        # var.name = "stretch"
+        # var.type = "SINGLE_PROP"
+        # var.targets[0].id_type = "OBJECT"
+        # var.targets[0].id = context.active_object
+        # var.targets[0].data_path = 'pose.bones["thigh_parent.L"]["IK_Stretch"]'
 
-        var = driver.variables.new()
-        var.name = "ik"
-        var.type = "SINGLE_PROP"
-        var.targets[0].id_type = "OBJECT"
-        var.targets[0].id = context.active_object
-        var.targets[0].data_path = 'pose.bones["thigh_parent.L"]["IK_FK"]'
+        # var = driver.variables.new()
+        # var.name = "ik"
+        # var.type = "SINGLE_PROP"
+        # var.targets[0].id_type = "OBJECT"
+        # var.targets[0].id = context.active_object
+        # var.targets[0].data_path = 'pose.bones["thigh_parent.L"]["IK_FK"]'
 
-        var = driver.variables.new()
-        var.name = "distance"
-        var.type = 'LOC_DIFF'
-        var.targets[0].id = context.active_object
-        var.targets[0].bone_target = "MCH-thigh_ik_swing.L"
-        var.targets[1].id = context.active_object
-        var.targets[1].bone_target = "MCH-thigh_ik_target.L"
+        # var = driver.variables.new()
+        # var.name = "distance"
+        # var.type = 'LOC_DIFF'
+        # var.targets[0].id = context.active_object
+        # var.targets[0].bone_target = "MCH-thigh_ik_swing.L"
+        # var.targets[1].id = context.active_object
+        # var.targets[1].bone_target = "MCH-thigh_ik_target.L"
 
-        # Right Side
-        bpy.ops.object.mode_set(mode='EDIT')
+        # # Right Side
+        # bpy.ops.object.mode_set(mode='EDIT')
 
-        ik_str_thigh = edit_bones.new("IK-STR-thigh.R")
-        ik_str_thigh.head = edit_bones["thigh_ik.R"].head
-        ik_str_thigh.tail = edit_bones["foot_ik.R"].head
-        ik_str_thigh.parent = edit_bones["MCH-thigh_parent.R"]
+        # ik_str_thigh = edit_bones.new("IK-STR-thigh.R")
+        # ik_str_thigh.head = edit_bones["thigh_ik.R"].head
+        # ik_str_thigh.tail = edit_bones["foot_ik.R"].head
+        # ik_str_thigh.parent = edit_bones["MCH-thigh_parent.R"]
 
-        bpy.ops.object.mode_set(mode='POSE')
-        bones.id_data.collections_all["MCH"].assign(bones["IK-STR-thigh.R"])
-        constraints = pose_bones["IK-STR-thigh.R"].constraints
-        const = constraints.new('STRETCH_TO')
-        const.target = context.active_object
-        const.subtarget = "MCH-thigh_ik_target.R"
-        const = constraints.new('LIMIT_SCALE')
-        const.use_min_y = True
-        const.use_max_y = True
-        const.max_y = 1.0
-        const.owner_space = 'LOCAL'
+        # bpy.ops.object.mode_set(mode='POSE')
+        # bones.id_data.collections_all["MCH"].assign(bones["IK-STR-thigh.R"])
+        # constraints = pose_bones["IK-STR-thigh.R"].constraints
+        # const = constraints.new('STRETCH_TO')
+        # const.target = context.active_object
+        # const.subtarget = "MCH-thigh_ik_target.R"
+        # const = constraints.new('LIMIT_SCALE')
+        # const.use_min_y = True
+        # const.use_max_y = True
+        # const.max_y = 1.0
+        # const.owner_space = 'LOCAL'
 
-        driver = const.driver_add("influence").driver
-        driver.type = 'SCRIPTED'
-        driver.expression = "abs(1-stretch)"
-        var = driver.variables.new()
-        var.name = "stretch"
-        var.type = "SINGLE_PROP"
-        var.targets[0].id_type = "OBJECT"
-        var.targets[0].id = context.active_object
-        var.targets[0].data_path = 'pose.bones["thigh_parent.R"]["IK_Stretch"]'
+        # driver = const.driver_add("influence").driver
+        # driver.type = 'SCRIPTED'
+        # driver.expression = "abs(1-stretch)"
+        # var = driver.variables.new()
+        # var.name = "stretch"
+        # var.type = "SINGLE_PROP"
+        # var.targets[0].id_type = "OBJECT"
+        # var.targets[0].id = context.active_object
+        # var.targets[0].data_path = 'pose.bones["thigh_parent.R"]["IK_Stretch"]'
         
-        constraints = pose_bones["MCH-foot_tweak.R"].constraints
-        const = constraints.new('COPY_LOCATION')
-        const.target = context.active_object
-        const.subtarget = "IK-STR-thigh.R"
-        const.head_tail = 1
+        # constraints = pose_bones["MCH-foot_tweak.R"].constraints
+        # const = constraints.new('COPY_LOCATION')
+        # const.target = context.active_object
+        # const.subtarget = "IK-STR-thigh.R"
+        # const.head_tail = 1
 
-        bpy.ops.object.mode_set(mode='EDIT')
-        distance = edit_bones["IK-STR-thigh.R"].length
-        bpy.ops.object.mode_set(mode='POSE')
-        pose_bones["MCH-thigh_ik_target.R"].constraints.remove(pose_bones["MCH-thigh_ik_target.R"].constraints["Limit Distance"])
-        constraints = pose_bones["MCH-calf_tweak.R"].constraints
-        const = constraints.new('COPY_LOCATION')
-        const.target = context.active_object
-        const.subtarget = "IK-STR-thigh.R"
-        const.head_tail = .5
-        driver = const.driver_add("influence").driver
-        driver.type = 'SCRIPTED'
-        driver.expression = f"(1-ik) * (1-stretch) * (distance > {distance})"
-        var = driver.variables.new()
-        var.name = "stretch"
-        var.type = "SINGLE_PROP"
-        var.targets[0].id_type = "OBJECT"
-        var.targets[0].id = context.active_object
-        var.targets[0].data_path = 'pose.bones["thigh_parent.R"]["IK_Stretch"]'
+        # bpy.ops.object.mode_set(mode='EDIT')
+        # distance = edit_bones["IK-STR-thigh.R"].length
+        # bpy.ops.object.mode_set(mode='POSE')
+        # pose_bones["MCH-thigh_ik_target.R"].constraints.remove(pose_bones["MCH-thigh_ik_target.R"].constraints["Limit Distance"])
+        # constraints = pose_bones["MCH-calf_tweak.R"].constraints
+        # const = constraints.new('COPY_LOCATION')
+        # const.target = context.active_object
+        # const.subtarget = "IK-STR-thigh.R"
+        # const.head_tail = .5
+        # driver = const.driver_add("influence").driver
+        # driver.type = 'SCRIPTED'
+        # driver.expression = f"(1-ik) * (1-stretch) * (distance > {distance})"
+        # var = driver.variables.new()
+        # var.name = "stretch"
+        # var.type = "SINGLE_PROP"
+        # var.targets[0].id_type = "OBJECT"
+        # var.targets[0].id = context.active_object
+        # var.targets[0].data_path = 'pose.bones["thigh_parent.R"]["IK_Stretch"]'
 
-        var = driver.variables.new()
-        var.name = "ik"
-        var.type = "SINGLE_PROP"
-        var.targets[0].id_type = "OBJECT"
-        var.targets[0].id = context.active_object
-        var.targets[0].data_path = 'pose.bones["thigh_parent.R"]["IK_FK"]'
+        # var = driver.variables.new()
+        # var.name = "ik"
+        # var.type = "SINGLE_PROP"
+        # var.targets[0].id_type = "OBJECT"
+        # var.targets[0].id = context.active_object
+        # var.targets[0].data_path = 'pose.bones["thigh_parent.R"]["IK_FK"]'
 
-        var = driver.variables.new()
-        var.name = "distance"
-        var.type = 'LOC_DIFF'
-        var.targets[0].id = context.active_object
-        var.targets[0].bone_target = "MCH-thigh_ik_swing.R"
-        var.targets[1].id = context.active_object
-        var.targets[1].bone_target = "MCH-thigh_ik_target.R"
+        # var = driver.variables.new()
+        # var.name = "distance"
+        # var.type = 'LOC_DIFF'
+        # var.targets[0].id = context.active_object
+        # var.targets[0].bone_target = "MCH-thigh_ik_swing.R"
+        # var.targets[1].id = context.active_object
+        # var.targets[1].bone_target = "MCH-thigh_ik_target.R"
 
-        bpy.ops.object.mode_set(mode='EDIT')
+        # bpy.ops.object.mode_set(mode='EDIT')
 
-        # ARMS
-        ik_str_thigh = edit_bones.new("IK-STR-upperarm.L")
-        ik_str_thigh.head = edit_bones["upperarm_ik.L"].head
-        ik_str_thigh.tail = edit_bones["hand_ik.L"].head
-        ik_str_thigh.parent = edit_bones["MCH-upperarm_parent.L"]
+        # # ARMS
+        # ik_str_thigh = edit_bones.new("IK-STR-upperarm.L")
+        # ik_str_thigh.head = edit_bones["upperarm_ik.L"].head
+        # ik_str_thigh.tail = edit_bones["hand_ik.L"].head
+        # ik_str_thigh.parent = edit_bones["MCH-upperarm_parent.L"]
 
-        bpy.ops.object.mode_set(mode='POSE')
-        bones.id_data.collections_all["MCH"].assign(bones["IK-STR-upperarm.L"])
-        constraints = pose_bones["IK-STR-upperarm.L"].constraints
-        const = constraints.new('STRETCH_TO')
-        const.target = context.active_object
-        const.subtarget = "MCH-upperarm_ik_target.L"
-        const = constraints.new('LIMIT_SCALE')
-        const.use_min_y = True
-        const.use_max_y = True
-        const.max_y = 1.0
-        const.owner_space = 'LOCAL'
+        # bpy.ops.object.mode_set(mode='POSE')
+        # bones.id_data.collections_all["MCH"].assign(bones["IK-STR-upperarm.L"])
+        # constraints = pose_bones["IK-STR-upperarm.L"].constraints
+        # const = constraints.new('STRETCH_TO')
+        # const.target = context.active_object
+        # const.subtarget = "MCH-upperarm_ik_target.L"
+        # const = constraints.new('LIMIT_SCALE')
+        # const.use_min_y = True
+        # const.use_max_y = True
+        # const.max_y = 1.0
+        # const.owner_space = 'LOCAL'
 
-        driver = const.driver_add("influence").driver
-        driver.type = 'SCRIPTED'
-        driver.expression = "abs(1-stretch)"
-        var = driver.variables.new()
-        var.name = "stretch"
-        var.type = "SINGLE_PROP"
-        var.targets[0].id_type = "OBJECT"
-        var.targets[0].id = context.active_object
-        var.targets[0].data_path = 'pose.bones["upperarm_parent.L"]["IK_Stretch"]'
+        # driver = const.driver_add("influence").driver
+        # driver.type = 'SCRIPTED'
+        # driver.expression = "abs(1-stretch)"
+        # var = driver.variables.new()
+        # var.name = "stretch"
+        # var.type = "SINGLE_PROP"
+        # var.targets[0].id_type = "OBJECT"
+        # var.targets[0].id = context.active_object
+        # var.targets[0].data_path = 'pose.bones["upperarm_parent.L"]["IK_Stretch"]'
         
-        constraints = pose_bones["MCH-hand_tweak.L"].constraints
-        const = constraints.new('COPY_LOCATION')
-        const.target = context.active_object
-        const.subtarget = "IK-STR-upperarm.L"
-        const.head_tail = 1
-        driver = const.driver_add("influence").driver
-        driver.type = 'SCRIPTED'
-        driver.expression = f"1-ik"
-        var = driver.variables.new()
-        var.name = "ik"
-        var.type = "SINGLE_PROP"
-        var.targets[0].id_type = "OBJECT"
-        var.targets[0].id = context.active_object
-        var.targets[0].data_path = 'pose.bones["upperarm_parent.L"]["IK_FK"]'
+        # constraints = pose_bones["MCH-hand_tweak.L"].constraints
+        # const = constraints.new('COPY_LOCATION')
+        # const.target = context.active_object
+        # const.subtarget = "IK-STR-upperarm.L"
+        # const.head_tail = 1
+        # driver = const.driver_add("influence").driver
+        # driver.type = 'SCRIPTED'
+        # driver.expression = f"1-ik"
+        # var = driver.variables.new()
+        # var.name = "ik"
+        # var.type = "SINGLE_PROP"
+        # var.targets[0].id_type = "OBJECT"
+        # var.targets[0].id = context.active_object
+        # var.targets[0].data_path = 'pose.bones["upperarm_parent.L"]["IK_FK"]'
 
-        bpy.ops.object.mode_set(mode='EDIT')
-        distance = edit_bones["IK-STR-upperarm.L"].length
-        bpy.ops.object.mode_set(mode='POSE')
-        pose_bones["MCH-upperarm_ik_target.L"].constraints["Limit Distance"].distance = distance+.00001
-        constraints = pose_bones["MCH-forearm_tweak.L"].constraints
-        const = constraints.new('COPY_LOCATION')
-        const.target = context.active_object
-        const.subtarget = "IK-STR-upperarm.L"
-        const.head_tail = .5
-        driver = const.driver_add("influence").driver
-        driver.type = 'SCRIPTED'
-        driver.expression = f"(1-ik) * (1-stretch) * (distance > {distance})"
-        var = driver.variables.new()
-        var.name = "stretch"
-        var.type = "SINGLE_PROP"
-        var.targets[0].id_type = "OBJECT"
-        var.targets[0].id = context.active_object
-        var.targets[0].data_path = 'pose.bones["upperarm_parent.L"]["IK_Stretch"]'
+        # bpy.ops.object.mode_set(mode='EDIT')
+        # distance = edit_bones["IK-STR-upperarm.L"].length
+        # bpy.ops.object.mode_set(mode='POSE')
+        # pose_bones["MCH-upperarm_ik_target.L"].constraints["Limit Distance"].distance = distance+.00001
+        # constraints = pose_bones["MCH-forearm_tweak.L"].constraints
+        # const = constraints.new('COPY_LOCATION')
+        # const.target = context.active_object
+        # const.subtarget = "IK-STR-upperarm.L"
+        # const.head_tail = .5
+        # driver = const.driver_add("influence").driver
+        # driver.type = 'SCRIPTED'
+        # driver.expression = f"(1-ik) * (1-stretch) * (distance > {distance})"
+        # var = driver.variables.new()
+        # var.name = "stretch"
+        # var.type = "SINGLE_PROP"
+        # var.targets[0].id_type = "OBJECT"
+        # var.targets[0].id = context.active_object
+        # var.targets[0].data_path = 'pose.bones["upperarm_parent.L"]["IK_Stretch"]'
 
-        var = driver.variables.new()
-        var.name = "ik"
-        var.type = "SINGLE_PROP"
-        var.targets[0].id_type = "OBJECT"
-        var.targets[0].id = context.active_object
-        var.targets[0].data_path = 'pose.bones["upperarm_parent.L"]["IK_FK"]'
+        # var = driver.variables.new()
+        # var.name = "ik"
+        # var.type = "SINGLE_PROP"
+        # var.targets[0].id_type = "OBJECT"
+        # var.targets[0].id = context.active_object
+        # var.targets[0].data_path = 'pose.bones["upperarm_parent.L"]["IK_FK"]'
 
-        var = driver.variables.new()
-        var.name = "distance"
-        var.type = 'LOC_DIFF'
-        var.targets[0].id = context.active_object
-        var.targets[0].bone_target = "MCH-upperarm_ik_swing.L"
-        var.targets[1].id = context.active_object
-        var.targets[1].bone_target = "MCH-upperarm_ik_target.L"
+        # var = driver.variables.new()
+        # var.name = "distance"
+        # var.type = 'LOC_DIFF'
+        # var.targets[0].id = context.active_object
+        # var.targets[0].bone_target = "MCH-upperarm_ik_swing.L"
+        # var.targets[1].id = context.active_object
+        # var.targets[1].bone_target = "MCH-upperarm_ik_target.L"
         
-        bpy.ops.object.mode_set(mode="EDIT")
+        # bpy.ops.object.mode_set(mode="EDIT")
 
-        # Right side
-        ik_str_thigh = edit_bones.new("IK-STR-upperarm.R")
-        ik_str_thigh.head = edit_bones["upperarm_ik.R"].head
-        ik_str_thigh.tail = edit_bones["hand_ik.R"].head
-        ik_str_thigh.parent = edit_bones["MCH-upperarm_parent.R"]
+        # # Right side
+        # ik_str_thigh = edit_bones.new("IK-STR-upperarm.R")
+        # ik_str_thigh.head = edit_bones["upperarm_ik.R"].head
+        # ik_str_thigh.tail = edit_bones["hand_ik.R"].head
+        # ik_str_thigh.parent = edit_bones["MCH-upperarm_parent.R"]
 
-        bpy.ops.object.mode_set(mode='POSE')
-        bones.id_data.collections_all["MCH"].assign(bones["IK-STR-upperarm.R"])
-        constraints = pose_bones["IK-STR-upperarm.R"].constraints
-        const = constraints.new('STRETCH_TO')
-        const.target = context.active_object
-        const.subtarget = "MCH-upperarm_ik_target.R"
-        const = constraints.new('LIMIT_SCALE')
-        const.use_min_y = True
-        const.use_max_y = True
-        const.max_y = 1.0
-        const.owner_space = 'LOCAL'
+        # bpy.ops.object.mode_set(mode='POSE')
+        # bones.id_data.collections_all["MCH"].assign(bones["IK-STR-upperarm.R"])
+        # constraints = pose_bones["IK-STR-upperarm.R"].constraints
+        # const = constraints.new('STRETCH_TO')
+        # const.target = context.active_object
+        # const.subtarget = "MCH-upperarm_ik_target.R"
+        # const = constraints.new('LIMIT_SCALE')
+        # const.use_min_y = True
+        # const.use_max_y = True
+        # const.max_y = 1.0
+        # const.owner_space = 'LOCAL'
 
-        driver = const.driver_add("influence").driver
-        driver.type = 'SCRIPTED'
-        driver.expression = "abs(1-stretch)"
-        var = driver.variables.new()
-        var.name = "stretch"
-        var.type = "SINGLE_PROP"
-        var.targets[0].id_type = "OBJECT"
-        var.targets[0].id = context.active_object
-        var.targets[0].data_path = 'pose.bones["upperarm_parent.R"]["IK_Stretch"]'
+        # driver = const.driver_add("influence").driver
+        # driver.type = 'SCRIPTED'
+        # driver.expression = "abs(1-stretch)"
+        # var = driver.variables.new()
+        # var.name = "stretch"
+        # var.type = "SINGLE_PROP"
+        # var.targets[0].id_type = "OBJECT"
+        # var.targets[0].id = context.active_object
+        # var.targets[0].data_path = 'pose.bones["upperarm_parent.R"]["IK_Stretch"]'
         
-        constraints = pose_bones["MCH-hand_tweak.R"].constraints
-        const = constraints.new('COPY_LOCATION')
-        const.target = context.active_object
-        const.subtarget = "IK-STR-upperarm.R"
-        const.head_tail = 1
-        driver = const.driver_add("influence").driver
-        driver.type = 'SCRIPTED'
-        driver.expression = f"1-ik"
-        var = driver.variables.new()
-        var.name = "ik"
-        var.type = "SINGLE_PROP"
-        var.targets[0].id_type = "OBJECT"
-        var.targets[0].id = context.active_object
-        var.targets[0].data_path = 'pose.bones["upperarm_parent.R"]["IK_FK"]'
+        # constraints = pose_bones["MCH-hand_tweak.R"].constraints
+        # const = constraints.new('COPY_LOCATION')
+        # const.target = context.active_object
+        # const.subtarget = "IK-STR-upperarm.R"
+        # const.head_tail = 1
+        # driver = const.driver_add("influence").driver
+        # driver.type = 'SCRIPTED'
+        # driver.expression = f"1-ik"
+        # var = driver.variables.new()
+        # var.name = "ik"
+        # var.type = "SINGLE_PROP"
+        # var.targets[0].id_type = "OBJECT"
+        # var.targets[0].id = context.active_object
+        # var.targets[0].data_path = 'pose.bones["upperarm_parent.R"]["IK_FK"]'
 
-        bpy.ops.object.mode_set(mode='EDIT')
-        distance = edit_bones["IK-STR-upperarm.R"].length
-        bpy.ops.object.mode_set(mode='POSE')
-        pose_bones["MCH-upperarm_ik_target.R"].constraints["Limit Distance"].distance = distance+.00001
-        constraints = pose_bones["MCH-forearm_tweak.R"].constraints
-        const = constraints.new('COPY_LOCATION')
-        const.target = context.active_object
-        const.subtarget = "IK-STR-upperarm.R"
-        const.head_tail = .5
-        driver = const.driver_add("influence").driver
-        driver.type = 'SCRIPTED'
-        driver.expression = f"(1-ik) * (1-stretch) * (distance > {distance})"
-        var = driver.variables.new()
-        var.name = "stretch"
-        var.type = "SINGLE_PROP"
-        var.targets[0].id_type = "OBJECT"
-        var.targets[0].id = context.active_object
-        var.targets[0].data_path = 'pose.bones["upperarm_parent.R"]["IK_Stretch"]'
+        # bpy.ops.object.mode_set(mode='EDIT')
+        # distance = edit_bones["IK-STR-upperarm.R"].length
+        # bpy.ops.object.mode_set(mode='POSE')
+        # pose_bones["MCH-upperarm_ik_target.R"].constraints["Limit Distance"].distance = distance+.00001
+        # constraints = pose_bones["MCH-forearm_tweak.R"].constraints
+        # const = constraints.new('COPY_LOCATION')
+        # const.target = context.active_object
+        # const.subtarget = "IK-STR-upperarm.R"
+        # const.head_tail = .5
+        # driver = const.driver_add("influence").driver
+        # driver.type = 'SCRIPTED'
+        # driver.expression = f"(1-ik) * (1-stretch) * (distance > {distance})"
+        # var = driver.variables.new()
+        # var.name = "stretch"
+        # var.type = "SINGLE_PROP"
+        # var.targets[0].id_type = "OBJECT"
+        # var.targets[0].id = context.active_object
+        # var.targets[0].data_path = 'pose.bones["upperarm_parent.R"]["IK_Stretch"]'
 
-        var = driver.variables.new()
-        var.name = "ik"
-        var.type = "SINGLE_PROP"
-        var.targets[0].id_type = "OBJECT"
-        var.targets[0].id = context.active_object
-        var.targets[0].data_path = 'pose.bones["upperarm_parent.R"]["IK_FK"]'
+        # var = driver.variables.new()
+        # var.name = "ik"
+        # var.type = "SINGLE_PROP"
+        # var.targets[0].id_type = "OBJECT"
+        # var.targets[0].id = context.active_object
+        # var.targets[0].data_path = 'pose.bones["upperarm_parent.R"]["IK_FK"]'
 
-        var = driver.variables.new()
-        var.name = "distance"
-        var.type = 'LOC_DIFF'
-        var.targets[0].id = context.active_object
-        var.targets[0].bone_target = "MCH-upperarm_ik_swing.R"
-        var.targets[1].id = context.active_object
-        var.targets[1].bone_target = "MCH-upperarm_ik_target.R"
-                
-
+        # var = driver.variables.new()
+        # var.name = "distance"
+        # var.type = 'LOC_DIFF'
+        # var.targets[0].id = context.active_object
+        # var.targets[0].bone_target = "MCH-upperarm_ik_swing.R"
+        # var.targets[1].id = context.active_object
+        # var.targets[1].bone_target = "MCH-upperarm_ik_target.R"
         bpy.ops.object.mode_set(mode="EDIT")
 
         for bone in bones:
-            if ("DEF" not in bone.name and "ORG" not in bone.name and " bone" in bone.name or bone.name.startswith("_")) and "underlying" not in bone.collections:
-                edit_bones[bone.name].parent = edit_bones.get("DEF"+bone.parent.name.removeprefix("ORG"))
+            if ("DEF" not in bone.name and "ORG" not in bone.name and (" bone" in bone.name or bone.name.startswith("_"))) and "underlying" not in bone.collections:
+                edit_bones[bone.name].parent = edit_bones.get( "DEF-"+bone.parent.name.removeprefix("ORG-!"))
+        for bone in bones:
+            if (edit_bones.get(bone.name.removeprefix("l ")+"_tweak.L")) and "underlying" in bone.collections:
+                edit_bones[bone.name].parent = edit_bones.get(bone.name.removeprefix("l ")+"_tweak.L")
+            elif (edit_bones.get(bone.name.removeprefix("r ")+"_tweak.R")) and "underlying" in bone.collections:
+                edit_bones[bone.name].parent = edit_bones.get(bone.name.removeprefix("r ")+"_tweak.R")
 
         bpy.ops.object.mode_set(mode="POSE")
+        for bone in pose_bones:
+            bone.lock_scale[0] = False
+            bone.lock_scale[1] = False
+            bone.lock_scale[2] = False
         pose_bones["MCH-calf_ik.L"].lock_ik_y = False
         pose_bones["MCH-calf_ik.R"].lock_ik_y = False
 
@@ -1514,63 +1521,63 @@ class STORM_Rig_Generator(bpy.types.Operator):
             mode(mode="EDIT")
         
 
-        ###############################
-        # ARM IK FIX
-        ###############################
-        driver = pose_bones["MCH-forearm_ik.L"].constraints["IK"].driver_add("use_stretch").driver
-        stretch_driver(driver)
-        driver = pose_bones["MCH-forearm_ik.L"].constraints["IK.001"].driver_add("use_stretch").driver
-        stretch_driver(driver)
-        driver = pose_bones["MCH-forearm_ik.R"].constraints["IK"].driver_add("use_stretch").driver
-        stretch_driver(driver, side="R")
-        driver = pose_bones["MCH-forearm_ik.R"].constraints["IK.001"].driver_add("use_stretch").driver
-        stretch_driver(driver, side="R")
+        # ###############################
+        # # ARM IK FIX
+        # ###############################
+        # driver = pose_bones["MCH-forearm_ik.L"].constraints["IK"].driver_add("use_stretch").driver
+        # stretch_driver(driver)
+        # driver = pose_bones["MCH-forearm_ik.L"].constraints["IK.001"].driver_add("use_stretch").driver
+        # stretch_driver(driver)
+        # driver = pose_bones["MCH-forearm_ik.R"].constraints["IK"].driver_add("use_stretch").driver
+        # stretch_driver(driver, side="R")
+        # driver = pose_bones["MCH-forearm_ik.R"].constraints["IK.001"].driver_add("use_stretch").driver
+        # stretch_driver(driver, side="R")
 
-        # ##############################
-        # LEG IK FIX
-        # ##############################
-        driver = pose_bones["MCH-calf_ik.L"].constraints["IK"].driver_add("use_stretch").driver
-        stretch_driver(driver, legs=True)
-        driver = pose_bones["MCH-calf_ik.L"].constraints["IK.001"].driver_add("use_stretch").driver
-        stretch_driver(driver, legs=True)
-        driver = pose_bones["MCH-calf_ik.R"].constraints["IK"].driver_add("use_stretch").driver
-        stretch_driver(driver, legs=True, side="R")
-        driver = pose_bones["MCH-calf_ik.R"].constraints["IK.001"].driver_add("use_stretch").driver
-        stretch_driver(driver, legs=True, side="R")
+        # # ##############################
+        # # LEG IK FIX
+        # # ##############################
+        # driver = pose_bones["MCH-calf_ik.L"].constraints["IK"].driver_add("use_stretch").driver
+        # stretch_driver(driver, legs=True)
+        # driver = pose_bones["MCH-calf_ik.L"].constraints["IK.001"].driver_add("use_stretch").driver
+        # stretch_driver(driver, legs=True)
+        # driver = pose_bones["MCH-calf_ik.R"].constraints["IK"].driver_add("use_stretch").driver
+        # stretch_driver(driver, legs=True, side="R")
+        # driver = pose_bones["MCH-calf_ik.R"].constraints["IK.001"].driver_add("use_stretch").driver
+        # stretch_driver(driver, legs=True, side="R")
 
-        constraints = pose_bones["MCH-toe0_ik_parent.L"].constraints
-        constraints.remove(constraints["Copy Transforms"])
-        const = constraints.new('COPY_ROTATION')
-        const.target = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
-        const.subtarget = "MCH-heel_roll1.L"
-        const.target_space = 'LOCAL_OWNER_ORIENT'
-        const.owner_space = 'LOCAL'
+        # constraints = pose_bones["MCH-toe0_ik_parent.L"].constraints
+        # constraints.remove(constraints["Copy Transforms"])
+        # const = constraints.new('COPY_ROTATION')
+        # const.target = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
+        # const.subtarget = "MCH-heel_roll1.L"
+        # const.target_space = 'LOCAL_OWNER_ORIENT'
+        # const.owner_space = 'LOCAL'
 
-        const = constraints.new('COPY_SCALE')
-        const.target = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
-        const.subtarget = "MCH-heel_roll1.L"
+        # const = constraints.new('COPY_SCALE')
+        # const.target = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
+        # const.subtarget = "MCH-heel_roll1.L"
 
-        constraints = pose_bones["MCH-toe0_ik_parent.R"].constraints
-        constraints.remove(constraints["Copy Transforms"])
-        const = constraints.new('COPY_ROTATION')
-        const.target = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
-        const.subtarget = "MCH-heel_roll1.R"
-        const.target_space = 'LOCAL_OWNER_ORIENT'
-        const.owner_space = 'LOCAL'
+        # constraints = pose_bones["MCH-toe0_ik_parent.R"].constraints
+        # constraints.remove(constraints["Copy Transforms"])
+        # const = constraints.new('COPY_ROTATION')
+        # const.target = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
+        # const.subtarget = "MCH-heel_roll1.R"
+        # const.target_space = 'LOCAL_OWNER_ORIENT'
+        # const.owner_space = 'LOCAL'
 
-        const = constraints.new('COPY_SCALE')
-        const.target = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
-        const.subtarget = "MCH-heel_roll1.R"
+        # const = constraints.new('COPY_SCALE')
+        # const.target = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
+        # const.subtarget = "MCH-heel_roll1.R"
         # pose_bones["MCH-calf_ik.L"].ik_stiffness_x = .99
         # pose_bones["MCH-calf_ik.R"].ik_stiffness_x = .99
 
         bpy.ops.object.mode_set(mode='EDIT')
 
-        edit_bones["MCH-toe0_ik_parent.L"].parent = edit_bones["MCH-foot_tweak.L"]
-        edit_bones["MCH-toe0_ik_parent.L"].use_connect = False
+        # edit_bones["MCH-toe0_ik_parent.L"].parent = edit_bones["MCH-foot_tweak.L"]
+        # edit_bones["MCH-toe0_ik_parent.L"].use_connect = False
 
-        edit_bones["MCH-toe0_ik_parent.R"].parent = edit_bones["MCH-foot_tweak.R"]
-        edit_bones["MCH-toe0_ik_parent.R"].use_connect = False
+        # edit_bones["MCH-toe0_ik_parent.R"].parent = edit_bones["MCH-foot_tweak.R"]
+        # edit_bones["MCH-toe0_ik_parent.R"].use_connect = False
 
         mode(mode="OBJECT")
         for i in cr_object.data.bones:
