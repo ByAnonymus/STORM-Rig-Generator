@@ -756,7 +756,19 @@ class STORM_Rig_Generator(bpy.types.Operator):
         const = pose_bones["MCH-calf_ik.L"].constraints["IK"]
         driver = const.driver_add("use_stretch").driver
         driver.type = 'SCRIPTED'
-        driver.expression = "distance>1"
+        driver.expression = "distance>1.001"
+        var = driver.variables.new()
+        var.name = "distance"
+        var.type = 'TRANSFORMS'
+        var.targets[0].id = context.active_object
+        var.targets[0].bone_target = "IK-STR-thigh.L"
+        var.targets[0].transform_type = 'SCALE_Y'
+        var.targets[0].transform_space = 'WORLD_SPACE'
+
+        const = pose_bones["MCH-calf_ik.L"].constraints["IK.001"]
+        driver = const.driver_add("use_stretch").driver
+        driver.type = 'SCRIPTED'
+        driver.expression = "distance>1.001"
         var = driver.variables.new()
         var.name = "distance"
         var.type = 'TRANSFORMS'
@@ -781,7 +793,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
         const = pose_bones["MCH-calf_ik.R"].constraints["IK"]
         driver = const.driver_add("use_stretch").driver
         driver.type = 'SCRIPTED'
-        driver.expression = "distance>1"
+        driver.expression = "distance>1.001"
         var = driver.variables.new()
         var.name = "distance"
         var.type = 'TRANSFORMS'
@@ -790,6 +802,17 @@ class STORM_Rig_Generator(bpy.types.Operator):
         var.targets[0].transform_type = 'SCALE_Y'
         var.targets[0].transform_space = 'WORLD_SPACE'
 
+        const = pose_bones["MCH-calf_ik.R"].constraints["IK.001"]
+        driver = const.driver_add("use_stretch").driver
+        driver.type = 'SCRIPTED'
+        driver.expression = "distance>1.001"
+        var = driver.variables.new()
+        var.name = "distance"
+        var.type = 'TRANSFORMS'
+        var.targets[0].id = context.active_object
+        var.targets[0].bone_target = "IK-STR-thigh.R"
+        var.targets[0].transform_type = 'SCALE_Y'
+        var.targets[0].transform_space = 'WORLD_SPACE'
         bpy.ops.object.mode_set(mode="EDIT")
 
         ik_str_upperarm = edit_bones.new("IK-STR-upperarm.L")
@@ -806,7 +829,19 @@ class STORM_Rig_Generator(bpy.types.Operator):
         const = pose_bones["MCH-forearm_ik.L"].constraints["IK"]
         driver = const.driver_add("use_stretch").driver
         driver.type = 'SCRIPTED'
-        driver.expression = "distance>1"
+        driver.expression = "distance>1.001"
+        var = driver.variables.new()
+        var.name = "distance"
+        var.type = 'TRANSFORMS'
+        var.targets[0].id = context.active_object
+        var.targets[0].bone_target = "IK-STR-upperarm.L"
+        var.targets[0].transform_type = 'SCALE_Y'
+        var.targets[0].transform_space = 'WORLD_SPACE'
+        
+        const = pose_bones["MCH-forearm_ik.L"].constraints["IK.001"]
+        driver = const.driver_add("use_stretch").driver
+        driver.type = 'SCRIPTED'
+        driver.expression = "distance>1.001"
         var = driver.variables.new()
         var.name = "distance"
         var.type = 'TRANSFORMS'
@@ -832,7 +867,18 @@ class STORM_Rig_Generator(bpy.types.Operator):
         const = pose_bones["MCH-forearm_ik.R"].constraints["IK"]
         driver = const.driver_add("use_stretch").driver
         driver.type = 'SCRIPTED'
-        driver.expression = "distance>1"
+        driver.expression = "distance>1.001"
+        var = driver.variables.new()
+        var.name = "distance"
+        var.type = 'TRANSFORMS'
+        var.targets[0].id = context.active_object
+        var.targets[0].bone_target = "IK-STR-upperarm.R"
+        var.targets[0].transform_type = 'SCALE_Y'
+        var.targets[0].transform_space = 'WORLD_SPACE'
+        const = pose_bones["MCH-forearm_ik.R"].constraints["IK.001"]
+        driver = const.driver_add("use_stretch").driver
+        driver.type = 'SCRIPTED'
+        driver.expression = "distance>1.001"
         var = driver.variables.new()
         var.name = "distance"
         var.type = 'TRANSFORMS'
