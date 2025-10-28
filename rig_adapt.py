@@ -817,7 +817,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
 
         ik_str_upperarm = edit_bones.new("IK-STR-upperarm.L")
         ik_str_upperarm.head = edit_bones["upperarm_ik.L"].head
-        ik_str_upperarm.tail = edit_bones["foot_ik.L"].head
+        ik_str_upperarm.tail = edit_bones["hand_ik.L"].head
         ik_str_upperarm.parent = edit_bones["MCH-upperarm_parent.L"]
         bpy.ops.object.mode_set(mode='POSE')
         bones.id_data.collections_all["MCH"].assign(bones["IK-STR-upperarm.L"])
@@ -855,7 +855,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
 
         ik_str_upperarm = edit_bones.new("IK-STR-upperarm.R")
         ik_str_upperarm.head = edit_bones["upperarm_ik.R"].head
-        ik_str_upperarm.tail = edit_bones["foot_ik.R"].head
+        ik_str_upperarm.tail = edit_bones["hand_ik.R"].head
         ik_str_upperarm.parent = edit_bones["MCH-upperarm_parent.R"]
         bpy.ops.object.mode_set(mode='POSE')
         bones.id_data.collections_all["MCH"].assign(bones["IK-STR-upperarm.R"])
