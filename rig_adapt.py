@@ -455,10 +455,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
         ###############################
 
         parent = bones["pelvis"].parent
-        if not context.scene.byanon_spine_toggle:
-            edit_bones.remove(edit_bones["pelvis"].parent)
-        else:
-            edit_bones[parent.name].head = edit_bones["pelvis"].tail
+        edit_bones[parent.name].head = edit_bones["pelvis"].tail
 
         parent_name = parent.name
         # print(parent_name)
@@ -466,8 +463,6 @@ class STORM_Rig_Generator(bpy.types.Operator):
   
 
         bpy.ops.object.mode_set(mode="POSE")
-        if context.scene.byanon_spine_toggle:
-            bones[parent_name].select = True
         bones["pelvis"].select = True
         bones["spine"].select = True
         bones["spine1"].select = True
@@ -540,7 +535,8 @@ class STORM_Rig_Generator(bpy.types.Operator):
         edit_bones["clavicle.R"].tail = edit_bones["upperarm.R"].head
 
         bpy.ops.object.mode_set(mode="POSE")
-        physics_generate()
+        if context.scene.byanon_physics_toggle:
+            physics_generate()
         bpy.ops.bfl_byanon.extras()
         for bone in pose_bones:
             bone.rigify_parameters.super_copy_widget_type = "cube"
@@ -597,7 +593,6 @@ class STORM_Rig_Generator(bpy.types.Operator):
             bone.select_head = False
             bone.select_tail = False
             bone.select = False
-        
         bpy.ops.object.mode_set(mode="POSE")
         bones["upperarm.R"].select = True
         bones["forearm.R"].select = True
@@ -646,7 +641,150 @@ class STORM_Rig_Generator(bpy.types.Operator):
                 elif bone.name.startswith("!r "):
                     bone.name = "!" +bone.name.removeprefix("!r ")+".R"
         bpy.ops.pose.rigify_generate()
+        mode(mode="EDIT")
+        edit_bones = context.active_object.data.edit_bones
+        pose_bones = context.active_object.pose.bones
+        bones = context.active_object.data.bones
+        for i in range(2,7):
+            edit_bones[f"ORG-!arm bone0{i}.L"].align_orientation(edit_bones["ORG-!hand.L"])
+            edit_bones[f"!arm bone0{i}.L"].align_orientation(edit_bones["ORG-!hand.L"])
+
+            edit_bones[f"ORG-!arm bone0{i}.R"].align_orientation(edit_bones["ORG-!hand.R"])
+            edit_bones[f"!arm bone0{i}.R"].align_orientation(edit_bones["ORG-!hand.R"])
+        for i in range(1,3):
+            edit_bones[f"ORG-!foot bone0{i}.L"].align_orientation(edit_bones["ORG-!calf.L"])
+            edit_bones[f"!foot bone0{i}.L"].align_orientation(edit_bones["ORG-!calf.L"])
+
+            edit_bones[f"ORG-!foot bone0{i}.R"].align_orientation(edit_bones["ORG-!calf.R"])
+            edit_bones[f"!foot bone0{i}.R"].align_orientation(edit_bones["ORG-!calf.R"])
+        for i in range(3,6):
+            edit_bones[f"ORG-!foot bone0{i}.L"].align_orientation(edit_bones["ORG-!foot.L"])
+            edit_bones[f"!foot bone0{i}.L"].align_orientation(edit_bones["ORG-!foot.L"])
+
+            edit_bones[f"ORG-!foot bone0{i}.R"].align_orientation(edit_bones["ORG-!foot.R"])
+            edit_bones[f"!foot bone0{i}.R"].align_orientation(edit_bones["ORG-!foot.R"])
         bpy.ops.bfl_byanon.tweakarmature()
+        mode(mode="POSE")
+        pose_bones[f"ORG-!arm bone01.L"].constraints.remove(pose_bones[f"ORG-!arm bone01.L"].constraints["Copy Transforms"])
+        pose_bones[f"ORG-!arm bone01.R"].constraints.remove(pose_bones[f"ORG-!arm bone01.R"].constraints["Copy Transforms"])
+        # ARMS
+        for i in range (2,4):
+            pose_bones[f"ORG-!arm bone0{i}.L"].constraints.remove(pose_bones[f"ORG-!arm bone0{i}.L"].constraints["Copy Transforms"])
+            const = pose_bones[f"ORG-!arm bone0{i}.L"].constraints.new('COPY_ROTATION')
+            const.target = context.active_object
+            const.subtarget = "ORG-!forearm.L"
+            # const.use_x = False
+            # const.use_z = False
+            # const.euler_order = 'XZY'
+            match i:
+                case 2:
+                    const.influence = 0.5
+                case 3:
+                    const.influence = 0.75
+            const = pose_bones[f"ORG-!arm bone0{i}.L"].constraints.new('DAMPED_TRACK')
+            const.target = context.active_object
+            const.subtarget = "DEF-!forearm.L"
+            pose_bones[f"ORG-!arm bone0{i}.R"].constraints.remove(pose_bones[f"ORG-!arm bone0{i}.R"].constraints["Copy Transforms"])
+            const = pose_bones[f"ORG-!arm bone0{i}.R"].constraints.new('COPY_ROTATION')
+            const.target = context.active_object
+            const.subtarget = "ORG-!forearm.R"
+            match i:
+                case 2:
+                    const.influence = 0.5
+                case 3:
+                    const.influence = 0.75
+            const = pose_bones[f"ORG-!arm bone0{i}.L"].constraints.new('DAMPED_TRACK')
+            const.target = context.active_object
+            const.subtarget = "DEF-!forearm.L"
+        for i in range (4,7):
+            pose_bones[f"ORG-!arm bone0{i}.L"].constraints.remove(pose_bones[f"ORG-!arm bone0{i}.L"].constraints["Copy Transforms"])
+            const = pose_bones[f"ORG-!arm bone0{i}.L"].constraints.new('COPY_ROTATION')
+            const.target = context.active_object
+            const.subtarget = "ORG-!hand.L"
+            match i:
+                case 4:
+                    const.influence = 0.25
+                case 5:
+                    const.influence = 0.5
+                case 6:
+                    const.influence = 0.75
+            const = pose_bones[f"ORG-!arm bone0{i}.L"].constraints.new('DAMPED_TRACK')
+            const.target = context.active_object
+            const.subtarget = "DEF-!hand.L"
+            pose_bones[f"ORG-!arm bone0{i}.R"].constraints.remove(pose_bones[f"ORG-!arm bone0{i}.R"].constraints["Copy Transforms"])
+            const = pose_bones[f"ORG-!arm bone0{i}.R"].constraints.new('COPY_ROTATION')
+            const.target = context.active_object
+            const.subtarget = "ORG-!hand.R"
+            match i:
+                case 4:
+                    const.influence = 0.25
+                case 5:
+                    const.influence = 0.5
+                case 6:
+                    const.influence = 0.75
+            const = pose_bones[f"ORG-!arm bone0{i}.L"].constraints.new('DAMPED_TRACK')
+            const.target = context.active_object
+            const.subtarget = "DEF-!hand.L"
+        
+
+        # LEGS
+        for i in range (1,3):
+            pose_bones[f"ORG-!foot bone0{i}.L"].constraints.remove(pose_bones[f"ORG-!foot bone0{i}.L"].constraints["Copy Transforms"])
+            const = pose_bones[f"ORG-!foot bone0{i}.L"].constraints.new('COPY_ROTATION')
+            const.target = context.active_object
+            const.subtarget = "ORG-!calf.L"
+            # const.use_x = False
+            # const.use_z = False
+            # const.euler_order = 'XZY'
+            match i:
+                case 1:
+                    const.influence = 0.5
+                case 2:
+                    const.influence = 0.75
+            const = pose_bones[f"ORG-!foot bone0{i}.L"].constraints.new('DAMPED_TRACK')
+            const.target = context.active_object
+            const.subtarget = "DEF-!calf.L"
+            pose_bones[f"ORG-!foot bone0{i}.R"].constraints.remove(pose_bones[f"ORG-!foot bone0{i}.R"].constraints["Copy Transforms"])
+            const = pose_bones[f"ORG-!foot bone0{i}.R"].constraints.new('COPY_ROTATION')
+            const.target = context.active_object
+            const.subtarget = "ORG-!calf.R"
+
+            const = pose_bones[f"ORG-!foot bone0{i}.L"].constraints.new('DAMPED_TRACK')
+            const.target = context.active_object
+            const.subtarget = "DEF-!calf.L"
+            match i:
+                case 1:
+                    const.influence = 0.5
+                case 2:
+                    const.influence = 0.75
+        for i in range (3,6):
+            pose_bones[f"ORG-!foot bone0{i}.L"].constraints.remove(pose_bones[f"ORG-!foot bone0{i}.L"].constraints["Copy Transforms"])
+            const = pose_bones[f"ORG-!foot bone0{i}.L"].constraints.new('COPY_ROTATION')
+            const.target = context.active_object
+            const.subtarget = "ORG-!foot.L"
+            const.use_x = False
+            const.use_y = False
+            match i:
+                case 3:
+                    const.influence = 0.25
+                case 4:
+                    const.influence = 0.5
+                case 5:
+                    const.influence = 0.75
+            
+            pose_bones[f"ORG-!foot bone0{i}.R"].constraints.remove(pose_bones[f"ORG-!foot bone0{i}.R"].constraints["Copy Transforms"])
+            const = pose_bones[f"ORG-!foot bone0{i}.R"].constraints.new('COPY_ROTATION')
+            const.target = context.active_object
+            const.subtarget = "ORG-!foot.R"
+            const.use_x = False
+            const.use_y = False
+            match i:
+                case 3:
+                    const.influence = 0.25
+                case 4:
+                    const.influence = 0.5
+                case 5:
+                    const.influence = 0.75
         obj_rigify = context.active_object
         mode(mode="OBJECT")
         context.active_object.select_set(False)
@@ -655,43 +793,42 @@ class STORM_Rig_Generator(bpy.types.Operator):
         # mode(mode="OBJECT")
 
         # bpy.context.scene.rigiall_props.ik_fingers = True
-        for cr_object in context.view_layer.objects:
-            if "_CR." in cr_object.name and not cr_object.name.startswith("RIG"):
-                context.view_layer.objects.active = cr_object
-                context.active_object.select_set(True)
-                bpy.ops.pose.cloudrig_generate()
-                mode(mode="OBJECT")
-
-                for i in bpy.data.collections[cr_object.name+"-widgets"].objects:
-                    bpy.data.collections[cr_object.name+"-widgets"].objects.unlink(i)
-                    # bpy.context.scene.collection.objects.unlink(i)
-                bpy.data.collections.remove(bpy.data.collections[cr_object.name+"-widgets"])
-                bpy.data.armatures.remove(cr_object.data)
-                # bpy.data.objects.remove(cr_object)
-
-        # mode(mode="OBJECT")
-        context.active_object.select_set(False)
-        for cr_object in context.view_layer.objects:
-            if "_CR." in cr_object.name and cr_object.name.startswith("RIG"):
-                if cr_object.name.endswith(".001"):
+        if context.scene.byanon_physics_toggle:
+            for cr_object in context.view_layer.objects:
+                if "_CR." in cr_object.name and not cr_object.name.startswith("RIG"):
                     context.view_layer.objects.active = cr_object
-                cr_object.select_set(True)
-        bpy.ops.object.join()
-        cr_object = context.view_layer.objects.active
-        mode(mode="EDIT")
-        for bone in cr_object.data.edit_bones:
-            if "root" in bone.name:
-                cr_object.data.edit_bones.remove(bone)
-        
+                    context.active_object.select_set(True)
+                    bpy.ops.pose.cloudrig_generate()
+                    mode(mode="OBJECT")
+
+                    for i in bpy.data.collections[cr_object.name+"-widgets"].objects:
+                        bpy.data.collections[cr_object.name+"-widgets"].objects.unlink(i)
+                        # bpy.context.scene.collection.objects.unlink(i)
+                    bpy.data.collections.remove(bpy.data.collections[cr_object.name+"-widgets"])
+                    bpy.data.armatures.remove(cr_object.data)
+                    # bpy.data.objects.remove(cr_object)
+
+            # mode(mode="OBJECT")
+            context.active_object.select_set(False)
+            for cr_object in context.view_layer.objects:
+                if "_CR." in cr_object.name and cr_object.name.startswith("RIG"):
+                    if cr_object.name.endswith(".001"):
+                        context.view_layer.objects.active = cr_object
+                    cr_object.select_set(True)
+            bpy.ops.object.join()
+            cr_object = context.view_layer.objects.active
+            mode(mode="EDIT")
+            for bone in cr_object.data.edit_bones:
+                if "root" in bone.name:
+                    cr_object.data.edit_bones.remove(bone)
+            
         for i in context.view_layer.objects:
             i.select_set(False)
         context.view_layer.objects.active = obj_rigify
         context.active_object.select_set(True)
         mode(mode="POSE")
         # return {"FINISHED"}
-        edit_bones = context.active_object.data.edit_bones
-        pose_bones = context.active_object.pose.bones
-        bones = context.active_object.data.bones
+        
 
         bpy.ops.object.mode_set(mode="EDIT")
         for bone in bones:
@@ -889,20 +1026,35 @@ class STORM_Rig_Generator(bpy.types.Operator):
         bpy.ops.object.mode_set(mode="EDIT")
 
         for bone in bones:
-            if ("DEF" not in bone.name and "ORG" not in bone.name and (" bone" in bone.name or bone.name.startswith("_"))) and "underlying" not in bone.collections:
-                print("bone: ", "DEF-"+bone.parent.name.removeprefix("ORG-!").removeprefix("ORG-"))
+            if ("DEF" not in bone.name and "ORG" not in bone.name and (" bone" in bone.name)) and "underlying" not in bone.collections:
+                edit_bones[bone.name].parent = edit_bones.get(bone.name.replace("!", "ORG-"))
+        for bone in bones:
+            if ("ORG" in bone.name and (" bone" in bone.name)) and "underlying" not in bone.collections:
                 edit_bones[bone.name].parent = edit_bones.get( "DEF-"+bone.parent.name.removeprefix("ORG-!").removeprefix("ORG-"))
         for bone in bones:
             if (edit_bones.get(bone.name.removeprefix("l ")+"_tweak.L")) and "underlying" in bone.collections:
                 edit_bones[bone.name].parent = edit_bones.get(bone.name.removeprefix("l ")+"_tweak.L")
             elif (edit_bones.get(bone.name.removeprefix("r ")+"_tweak.R")) and "underlying" in bone.collections:
                 edit_bones[bone.name].parent = edit_bones.get(bone.name.removeprefix("r ")+"_tweak.R")
+        for bone in bones:
+            if (edit_bones.get("!"+bone.name.removeprefix("l ")+".L")) and "underlying" in bone.collections:
+                edit_bones[bone.name].parent = edit_bones.get("!"+bone.name.removeprefix("l ")+".L")
+            elif (edit_bones.get("!"+bone.name.removeprefix("r ")+".R")) and "underlying" in bone.collections:
+                edit_bones[bone.name].parent = edit_bones.get("!"+bone.name.removeprefix("r ")+".R")
+        for bone in bones:
+            if ("MCH" not in bone.name):
+                print("bone_to_remove_connect: ", bone.name)
+                edit_bones[bone.name].use_connect = False
 
         bpy.ops.object.mode_set(mode="POSE")
         for bone in pose_bones:
             bone.lock_scale[0] = False
             bone.lock_scale[1] = False
             bone.lock_scale[2] = False
+            
+            bone.lock_location[0] = False
+            bone.lock_location[1] = False
+            bone.lock_location[2] = False
         pose_bones["MCH-calf_ik.L"].lock_ik_y = False
         pose_bones["MCH-calf_ik.R"].lock_ik_y = False
 
@@ -1432,12 +1584,13 @@ class STORM_Rig_Generator(bpy.types.Operator):
         # edit_bones["MCH-toe0_ik_parent.R"].use_connect = False
 
         mode(mode="OBJECT")
-        for i in cr_object.data.bones:
-            if "STR" not in i.name and "PSX" not in i.name:
-                i.name ="CR_"+i.name
-        context.view_layer.objects.active = obj_rigify
-        cr_object.select_set(True)
-        bpy.ops.object.join()
+        if context.scene.byanon_physics_toggle:
+            for i in cr_object.data.bones:
+                if "STR" not in i.name and "PSX" not in i.name:
+                    i.name ="CR_"+i.name
+            context.view_layer.objects.active = obj_rigify
+            cr_object.select_set(True)
+            bpy.ops.object.join()
         for bone in bones:
             if not (bones.get(bone.name.replace("!", "")) or "Extras" in bone.collections):
                 bone.name = bone.name.replace("!", "")
@@ -1454,91 +1607,99 @@ class STORM_Rig_Generator(bpy.types.Operator):
         for bone in pose_bones:
             if bone.get('parent') and "ORG" not in bone.name and bone.name.startswith("CR_"):
                 dct["CR_ROOT-"+bone.name.removeprefix("CR_")] = "ORG-"+bone["parent"]
-                
+            # elif bone.get('parent') and bone.name.startswith("!CR_"):
+            #     dct[bone.name] = "ORG-"+bone["parent"]
             #     const = bone.constraints.new('LOCKED_TRACK')
             #     const.target = bone.constraints.get("Damped Track").target
             #     const.subtarget = bone.constraints.get("Damped Track").subtarget
             #     const.track_axis = bone.constraints.get("Damped Track").track_axis
             #     const.lock_axis = "LOCK_X"
             #     bone.constraints.get("Damped Track").enabled = False
-        
-        print(dct)
-        
-        mode(mode='EDIT')
-        for bone, parent in dct.items():
-            print(bone, parent)
-            edit_bones[bone].parent = edit_bones[parent]
-
-        for bone in lst:
-            print("error bone: ",bone)
-            copy_bone_props(bone+"_parent", edit_bones[bone], set_as_parent = True, parent = edit_bones[bone].parent.name)
-            
-        mode(mode='POSE')
-        for bone in lst:
-            obj_rigify.data.collections_all["ORG"].assign(bones[bone+"_parent"])
-        for bone in pose_bones:
-            if bone.name.startswith("!"):
-                if bone.get("physics_chain_start"):
-                    lst_start.append(bone.name)
-        print("lst_start: ", lst_start)
-        for bone in lst:
-            parent_bone = pose_bones[bone+"_parent"]
-            const = parent_bone.constraints.new("COPY_TRANSFORMS")
-            const.target = obj_rigify
-            subtarget = bone.removeprefix("!")
-            const.subtarget = f"CR_DEF-{subtarget}"
-            drv = const.driver_add("influence").driver
-            drv.type = 'AVERAGE'
-            var = drv.variables.new()
-            var.targets[0].id = context.active_object
-            if bone in lst_start:
-                var.targets[0].data_path = f"pose.bones[\"{bone}\"][\"physics\"]"
-            else:
-                for b in pose_bones[bone].parent_recursive:
-                    print(f"b.parent ({bone}): ",b)
-                    if "!"+b.name.removeprefix("ORG-") in lst_start:
-                        print("b.name: ",b)
-                        pose_bones["!"+b.name.removeprefix("ORG-")]["physics"] = 1.0
-                        var.targets[0].data_path = f"pose.bones[\"{'!'+b.name.removeprefix('ORG-')}\"][\"physics\"]"
-                        break
-        mode(mode='OBJECT')
-        for cobj in obj_rigify.children:
-            isolate(context,cobj)
+        if context.scene.byanon_physics_toggle:       
             mode(mode='EDIT')
-            bpy.ops.mesh.select_all(action='SELECT')
-            bpy.ops.transform.translate(value=(-0, -0.005, -0), orient_type='LOCAL')
-            bpy.ops.mesh.select_all(action='DESELECT')
-            cobj.hide_viewport = True
-            cobj.hide_render = True
+            for bone, parent in dct.items():
+                print(bone, parent)
+                edit_bones[bone].parent = edit_bones[parent]
 
+            for bone in lst:
+                print("error bone: ",bone)
+                copy_bone_props(bone+"_parent", edit_bones[bone], set_as_parent = True, parent = edit_bones[bone].parent.name)
+                
+            mode(mode='POSE')
+            for bone in lst:
+                obj_rigify.data.collections_all["ORG"].assign(bones[bone+"_parent"])
+            for bone in pose_bones:
+                if bone.name.startswith("!"):
+                    if bone.get("physics_chain_start"):
+                        lst_start.append(bone.name)
+            print("lst_start: ", lst_start)
+            for bone in lst:
+                parent_bone = pose_bones[bone+"_parent"]
+                const = parent_bone.constraints.new("COPY_TRANSFORMS")
+                const.target = obj_rigify
+                subtarget = bone.removeprefix("!")
+                const.subtarget = f"CR_DEF-{subtarget}"
+                drv = const.driver_add("influence").driver
+                drv.type = 'AVERAGE'
+                var = drv.variables.new()
+                var.targets[0].id = context.active_object
+                if bone in lst_start:
+                    var.targets[0].data_path = f"pose.bones[\"{bone}\"][\"physics\"]"
+                else:
+                    for b in pose_bones[bone].parent_recursive:
+                        print(f"b.parent ({bone}): ",b)
+                        if "!"+b.name.removeprefix("ORG-") in lst_start:
+                            print("b.name: ",b)
+                            pose_bones["!"+b.name.removeprefix("ORG-")]["physics"] = 1.0
+                            var.targets[0].data_path = f"pose.bones[\"{'!'+b.name.removeprefix('ORG-')}\"][\"physics\"]"
+                            break
             mode(mode='OBJECT')
-        isolate(context,obj_rigify)
-        for bone in bones:
-            if "Deform Bones" in bone.collections:
-                obj_rigify.data.collections["DEF"].assign(bone)
-            elif "Original Bones" in bone.collections:
-                obj_rigify.data.collections_all["ORG"].assign(bone)
-            elif "Mechanism Bones" in bone.collections:
-                obj_rigify.data.collections_all["MCH"].assign(bone)
-        obj_rigify.data.collections.remove(obj_rigify.data.collections_all["Deform Bones"])
-        obj_rigify.data.collections.remove(obj_rigify.data.collections_all["Original Bones"])
-        obj_rigify.data.collections.remove(obj_rigify.data.collections_all["Mechanism Bones"])
-        obj_rigify.data.collections_all["FK Controls"].name = "FK Controls (DO NOT USE)"
-        obj_rigify.data.collections_all["FK Controls (DO NOT USE)"].is_visible = False
-        obj_rigify.data.collections_all["FK Secondary"].name = "FK Controls"
-        obj_rigify.data.collections_all["Stretch Controls"].is_visible = False
+            for cobj in obj_rigify.children:
+                isolate(context,cobj)
+                mode(mode='EDIT')
+                bpy.ops.mesh.select_all(action='SELECT')
+                bpy.ops.transform.translate(value=(-0, -0.005, -0), orient_type='LOCAL')
+                bpy.ops.mesh.select_all(action='DESELECT')
+                cobj.hide_viewport = True
+                cobj.hide_render = True
+
+                mode(mode='OBJECT')
+            isolate(context,obj_rigify)
+            for bone in bones:
+                if "Deform Bones" in bone.collections:
+                    obj_rigify.data.collections["DEF"].assign(bone)
+                elif "Original Bones" in bone.collections:
+                    obj_rigify.data.collections_all["ORG"].assign(bone)
+                elif "Mechanism Bones" in bone.collections:
+                    obj_rigify.data.collections_all["MCH"].assign(bone)
+            def remove_collection(collection_name):
+                if collection_name in obj_rigify.data.collections:
+                    collection = obj_rigify.data.collections[collection_name]
+                    obj_rigify.data.collections.remove(collection)
+            remove_collection("Deform Bones")
+            remove_collection("Deform Bones")
+            remove_collection("Original Bones")
+            remove_collection("Mechanism Bones")
+            if "FK Controls" in obj_rigify.data.collections_all:
+                obj_rigify.data.collections_all["FK Controls"].name = "FK Controls (DO NOT USE)"
+            if "FK Controls (DO NOT USE)" in obj_rigify.data.collections_all:
+                obj_rigify.data.collections_all["FK Controls (DO NOT USE)"].is_visible = False
+            if "FK Secondary" in obj_rigify.data.collections_all:
+                obj_rigify.data.collections_all["FK Secondary"].name = "FK Controls"
+            if "Stretch Controls" in obj_rigify.data.collections_all:
+                obj_rigify.data.collections_all["Stretch Controls"].is_visible = False
 
 
-        mode(mode='POSE')
-        for bone in pose_bones:
-            if "Extras" in bone.bone.collections and bone.get("physics_bone"):
-                bone.custom_shape_scale_xyz[0] *= 0.25
-                bone.custom_shape_scale_xyz[1] *= 0.25
-                bone.custom_shape_scale_xyz[2] *= 0.25
-            elif "FK-PSX" in bone.name:
-                bone.custom_shape_scale_xyz[0] *= 5
-                bone.custom_shape_scale_xyz[1] *= 5
-                bone.custom_shape_scale_xyz[2] *= 5
+            mode(mode='POSE')
+            for bone in pose_bones:
+                if "Extras" in bone.bone.collections and bone.get("physics_bone"):
+                    bone.custom_shape_scale_xyz[0] *= 0.25
+                    bone.custom_shape_scale_xyz[1] *= 0.25
+                    bone.custom_shape_scale_xyz[2] *= 0.25
+                elif "FK-PSX" in bone.name:
+                    bone.custom_shape_scale_xyz[0] *= 5
+                    bone.custom_shape_scale_xyz[1] *= 5
+                    bone.custom_shape_scale_xyz[2] *= 5
 
         return {"FINISHED"}
 
@@ -1699,11 +1860,11 @@ class STORM_Rig_Transfer(bpy.types.Operator):
                 extras = bool(pose_bones[bone.name].get("extra"))
             if (extras or "finger" in bone.name) and "ORG" not in bone.name and "DEF" not in bone.name:
                 if ".L" in bone.name:
-                    if bones.get("l " + bone.name.removesuffix(".L")):
-                        edit_bones[bone.name].parent = edit_bones["l " + bone.name.removesuffix(".L")]
+                    if bones.get("l " + bone.name.removesuffix(".L").removeprefix("!")):
+                        edit_bones[bone.name].parent = edit_bones["l " + bone.name.removesuffix(".L").removeprefix("!")]
                 elif ".R" in bone.name:
-                    if bones.get("r " + bone.name.removesuffix(".R") +""):
-                        edit_bones[bone.name].parent = edit_bones["r " + bone.name.removesuffix(".R")]
+                    if bones.get("r " + bone.name.removesuffix(".R") .removeprefix("!")):
+                        edit_bones[bone.name].parent = edit_bones["r " + bone.name.removesuffix(".R").removeprefix("!")]
                 else:
                     if bones.get(bone.name):
                         edit_bones[bone.name].parent = edit_bones[bone.name.removeprefix("!")]
@@ -1711,14 +1872,6 @@ class STORM_Rig_Transfer(bpy.types.Operator):
         bonemerge(context.active_object, bpy.data.objects[storm_arm.name], subtarget = 1, only_1_layer = True)
 
         bonemerge(bpy.data.objects[storm_rig.name], context.active_object, subtarget = 2)
-
-
-    
-        bpy.data.objects[storm_rig.name].pose.bones["thigh_ik.L"].constraints.remove(bpy.data.objects[storm_rig.name].pose.bones["thigh_ik.L"].constraints["BONEMERGE-ATTACH-SCALE"])
-        bpy.data.objects[storm_rig.name].pose.bones["thigh_ik.R"].constraints.remove(bpy.data.objects[storm_rig.name].pose.bones["thigh_ik.R"].constraints["BONEMERGE-ATTACH-SCALE"])
-
-        bpy.data.objects[storm_rig.name].pose.bones["upperarm_ik.L"].constraints.remove(bpy.data.objects[storm_rig.name].pose.bones["upperarm_ik.L"].constraints["BONEMERGE-ATTACH-SCALE"])
-        bpy.data.objects[storm_rig.name].pose.bones["upperarm_ik.R"].constraints.remove(bpy.data.objects[storm_rig.name].pose.bones["upperarm_ik.R"].constraints["BONEMERGE-ATTACH-SCALE"])
 
 
         for bone in bpy.data.objects[storm_rig.name].pose.bones:

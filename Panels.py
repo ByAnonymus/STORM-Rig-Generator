@@ -16,7 +16,7 @@ class STORM_Adapter_Panel(bpy.types.Panel):
         layout.prop(scene, "byanon_active_storm_armature")
 
         layout.prop(scene, "byanon_active_storm_rig")
-        layout.prop(scene, "byanon_spine_toggle")
+        layout.prop(scene, "byanon_physics_toggle")
 
         layout.operator("byanon.storm_rig_adapter")
         layout.operator("byanon.storm_rig_bonemerge")
@@ -43,13 +43,9 @@ def register():
         name="STORM Rig",
         description="Rig to adapt",
     )
-    bpy.types.Scene.byanon_spine_toggle = bpy.props.BoolProperty(
-        name="Legacy Spine Control (only for 3.6)",
-        default=False
-    )
-    bpy.types.Scene.byanon_finger_toggle = bpy.props.BoolProperty(
-        name="Fingers",
-        default=False
+    bpy.types.Scene.byanon_physics_toggle = bpy.props.BoolProperty(
+        name="Physics Bones",
+        default=True
     )
 
 
@@ -58,5 +54,4 @@ def unregister():
         bpy.utils.unregister_class(i)
     del bpy.types.Scene.byanon_active_storm_armature
     del bpy.types.Scene.byanon_active_storm_rig
-    del bpy.types.Scene.byanon_spine_toggle
-    del bpy.types.Scene.byanon_finger_toggle
+    del bpy.types.Scene.byanon_physics_toggle
