@@ -645,6 +645,12 @@ class STORM_Rig_Generator(bpy.types.Operator):
         edit_bones = context.active_object.data.edit_bones
         pose_bones = context.active_object.pose.bones
         bones = context.active_object.data.bones
+
+        edit_bones["MCH-!upperarm_tweak.L"].parent = edit_bones["ORG-!upperarm.L"]
+        edit_bones["MCH-!upperarm_tweak.R"].parent = edit_bones["ORG-!upperarm.R"]
+        edit_bones["MCH-!thigh_tweak.L"].parent = edit_bones["ORG-!thigh.L"]
+        edit_bones["MCH-!thigh_tweak.R"].parent = edit_bones["ORG-!thigh.R"]
+
         for i in range(2,7):
             edit_bones[f"ORG-!arm bone0{i}.L"].align_orientation(edit_bones["ORG-!hand.L"])
             edit_bones[f"!arm bone0{i}.L"].align_orientation(edit_bones["ORG-!hand.L"])
