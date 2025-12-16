@@ -699,9 +699,9 @@ class STORM_Rig_Generator(bpy.types.Operator):
                     const.influence = 0.5
                 case 3:
                     const.influence = 0.75
-            const = pose_bones[f"ORG-!arm bone0{i}.L"].constraints.new('DAMPED_TRACK')
+            const = pose_bones[f"ORG-!arm bone0{i}.R"].constraints.new('DAMPED_TRACK')
             const.target = context.active_object
-            const.subtarget = "DEF-!forearm.L"
+            const.subtarget = "DEF-!forearm.R"
         for i in range (4,7):
             pose_bones[f"ORG-!arm bone0{i}.L"].constraints.remove(pose_bones[f"ORG-!arm bone0{i}.L"].constraints["Copy Transforms"])
             const = pose_bones[f"ORG-!arm bone0{i}.L"].constraints.new('COPY_ROTATION')
@@ -728,9 +728,9 @@ class STORM_Rig_Generator(bpy.types.Operator):
                     const.influence = 0.5
                 case 6:
                     const.influence = 0.75
-            const = pose_bones[f"ORG-!arm bone0{i}.L"].constraints.new('DAMPED_TRACK')
+            const = pose_bones[f"ORG-!arm bone0{i}.R"].constraints.new('DAMPED_TRACK')
             const.target = context.active_object
-            const.subtarget = "DEF-!hand.L"
+            const.subtarget = "DEF-!hand.R"
         
 
         # LEGS
@@ -754,15 +754,14 @@ class STORM_Rig_Generator(bpy.types.Operator):
             const = pose_bones[f"ORG-!foot bone0{i}.R"].constraints.new('COPY_ROTATION')
             const.target = context.active_object
             const.subtarget = "ORG-!calf.R"
-
-            const = pose_bones[f"ORG-!foot bone0{i}.L"].constraints.new('DAMPED_TRACK')
-            const.target = context.active_object
-            const.subtarget = "DEF-!calf.L"
             match i:
                 case 1:
                     const.influence = 0.5
                 case 2:
                     const.influence = 0.75
+            const = pose_bones[f"ORG-!foot bone0{i}.R"].constraints.new('DAMPED_TRACK')
+            const.target = context.active_object
+            const.subtarget = "DEF-!calf.R"
         for i in range (3,6):
             pose_bones[f"ORG-!foot bone0{i}.L"].constraints.remove(pose_bones[f"ORG-!foot bone0{i}.L"].constraints["Copy Transforms"])
             const = pose_bones[f"ORG-!foot bone0{i}.L"].constraints.new('COPY_ROTATION')
