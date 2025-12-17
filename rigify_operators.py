@@ -135,6 +135,8 @@ class bfl_byanon_OT_makeArm(ot):
         param.segments = 1
         param.make_custom_pivot = True
         self.report({'INFO'}, 'Arm generated!')
+        param.fk_coll_refs.remove(0)
+        param.tweak_coll_refs.remove(0)
         fk_col = param.fk_coll_refs.add()
         tweak_col = param.tweak_coll_refs.add()
         
@@ -233,6 +235,8 @@ class bfl_byanon_OT_makeLeg(bfl_byanon_OT_genericText):
         param.segments = 1
         param.make_custom_pivot = True
         param.rotation_axis = self.rotation_axis
+        param.fk_coll_refs.remove(0)
+        param.tweak_coll_refs.remove(0)
         fk_col = param.fk_coll_refs.add()
         tweak_col = param.tweak_coll_refs.add()
         
@@ -612,6 +616,7 @@ class bfl_byanon_OT_initialize(ot):
             ("Leg.R (FK)", "FK", 12, "(FK)"),
             ("Leg.R (Tweak)", "Tweak", 13, "(Tweak)"),
             ('Extras', 'Extra', 17, ''),
+            (context.scene.byanon_extra_layer, 'Extra', 18, ''),
             ("Root", "Root", 16, ""),
         )
         for name, color, row, title in layers:

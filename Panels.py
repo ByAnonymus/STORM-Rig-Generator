@@ -16,6 +16,7 @@ class STORM_Adapter_Panel(bpy.types.Panel):
         layout.prop(scene, "byanon_active_storm_armature")
 
         layout.prop(scene, "byanon_active_storm_rig")
+        layout.prop(scene, "byanon_extra_layer")
         layout.prop(scene, "byanon_physics_toggle")
 
         layout.operator("byanon.storm_rig_adapter")
@@ -44,10 +45,13 @@ def register():
         description="Rig to adapt",
     )
     bpy.types.Scene.byanon_physics_toggle = bpy.props.BoolProperty(
-        name="Physics Bones",
-        default=True
+        name="Physics Bones (don't turn on nigga pls ong no cap)",
+        default=False
     )
-
+    bpy.types.Scene.byanon_extra_layer = bpy.props.StringProperty(
+        name="Extra layer name",
+        default="Junk"
+    )
 
 def unregister():
     for i in classes:
@@ -55,3 +59,4 @@ def unregister():
     del bpy.types.Scene.byanon_active_storm_armature
     del bpy.types.Scene.byanon_active_storm_rig
     del bpy.types.Scene.byanon_physics_toggle
+    del bpy.types.Scene.byanon_extra_layer
