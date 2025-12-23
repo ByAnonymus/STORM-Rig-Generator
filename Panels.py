@@ -26,9 +26,6 @@ class STORM_Adapter_Panel(bpy.types.Panel):
         layout.operator("byanon.storm_rig_unbonemerger")
 
 
-
-
-
 classes = [STORM_Adapter_Panel]
 
 def register():

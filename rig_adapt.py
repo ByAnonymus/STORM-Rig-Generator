@@ -172,7 +172,6 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         new_object.data = new_armature 
         # for bone in new_object.pose.bones:
         #     bone.name += ".001"
-
         # new_object.select_set(True)
         # bpy.ops.object.join()
         
@@ -650,13 +649,13 @@ class STORM_Rig_Generator(bpy.types.Operator):
         edit_bones["MCH-!upperarm_tweak.R"].parent = edit_bones["ORG-!upperarm.R"]
         edit_bones["MCH-!thigh_tweak.L"].parent = edit_bones["ORG-!thigh.L"]
         edit_bones["MCH-!thigh_tweak.R"].parent = edit_bones["ORG-!thigh.R"]
+        for bone in "arm", "sleeve":
+            for i in range(2,7):
+                edit_bones[f"ORG-!{bone} bone0{i}.L"].align_orientation(edit_bones["ORG-!hand.L"])
+                edit_bones[f"!{bone} bone0{i}.L"].align_orientation(edit_bones["ORG-!hand.L"])
 
-        for i in range(2,7):
-            edit_bones[f"ORG-!arm bone0{i}.L"].align_orientation(edit_bones["ORG-!hand.L"])
-            edit_bones[f"!arm bone0{i}.L"].align_orientation(edit_bones["ORG-!hand.L"])
-
-            edit_bones[f"ORG-!arm bone0{i}.R"].align_orientation(edit_bones["ORG-!hand.R"])
-            edit_bones[f"!arm bone0{i}.R"].align_orientation(edit_bones["ORG-!hand.R"])
+                edit_bones[f"ORG-!{bone} bone0{i}.R"].align_orientation(edit_bones["ORG-!hand.R"])
+                edit_bones[f"!{bone} bone0{i}.R"].align_orientation(edit_bones["ORG-!hand.R"])
         for i in range(1,3):
             edit_bones[f"ORG-!foot bone0{i}.L"].align_orientation(edit_bones["ORG-!calf.L"])
             edit_bones[f"!foot bone0{i}.L"].align_orientation(edit_bones["ORG-!calf.L"])
@@ -674,64 +673,65 @@ class STORM_Rig_Generator(bpy.types.Operator):
         pose_bones[f"ORG-!arm bone01.L"].constraints.remove(pose_bones[f"ORG-!arm bone01.L"].constraints["Copy Transforms"])
         pose_bones[f"ORG-!arm bone01.R"].constraints.remove(pose_bones[f"ORG-!arm bone01.R"].constraints["Copy Transforms"])
         # ARMS
-        for i in range (2,4):
-            pose_bones[f"ORG-!arm bone0{i}.L"].constraints.remove(pose_bones[f"ORG-!arm bone0{i}.L"].constraints["Copy Transforms"])
-            const = pose_bones[f"ORG-!arm bone0{i}.L"].constraints.new('COPY_ROTATION')
-            const.target = context.active_object
-            const.subtarget = "ORG-!forearm.L"
-            # const.use_x = False
-            # const.use_z = False
-            # const.euler_order = 'XZY'
-            match i:
-                case 2:
-                    const.influence = 0.5
-                case 3:
-                    const.influence = 0.75
-            const = pose_bones[f"ORG-!arm bone0{i}.L"].constraints.new('DAMPED_TRACK')
-            const.target = context.active_object
-            const.subtarget = "DEF-!forearm.L"
-            pose_bones[f"ORG-!arm bone0{i}.R"].constraints.remove(pose_bones[f"ORG-!arm bone0{i}.R"].constraints["Copy Transforms"])
-            const = pose_bones[f"ORG-!arm bone0{i}.R"].constraints.new('COPY_ROTATION')
-            const.target = context.active_object
-            const.subtarget = "ORG-!forearm.R"
-            match i:
-                case 2:
-                    const.influence = 0.5
-                case 3:
-                    const.influence = 0.75
-            const = pose_bones[f"ORG-!arm bone0{i}.R"].constraints.new('DAMPED_TRACK')
-            const.target = context.active_object
-            const.subtarget = "DEF-!forearm.R"
-        for i in range (4,7):
-            pose_bones[f"ORG-!arm bone0{i}.L"].constraints.remove(pose_bones[f"ORG-!arm bone0{i}.L"].constraints["Copy Transforms"])
-            const = pose_bones[f"ORG-!arm bone0{i}.L"].constraints.new('COPY_ROTATION')
-            const.target = context.active_object
-            const.subtarget = "ORG-!hand.L"
-            match i:
-                case 4:
-                    const.influence = 0.25
-                case 5:
-                    const.influence = 0.5
-                case 6:
-                    const.influence = 0.75
-            const = pose_bones[f"ORG-!arm bone0{i}.L"].constraints.new('DAMPED_TRACK')
-            const.target = context.active_object
-            const.subtarget = "DEF-!hand.L"
-            pose_bones[f"ORG-!arm bone0{i}.R"].constraints.remove(pose_bones[f"ORG-!arm bone0{i}.R"].constraints["Copy Transforms"])
-            const = pose_bones[f"ORG-!arm bone0{i}.R"].constraints.new('COPY_ROTATION')
-            const.target = context.active_object
-            const.subtarget = "ORG-!hand.R"
-            match i:
-                case 4:
-                    const.influence = 0.25
-                case 5:
-                    const.influence = 0.5
-                case 6:
-                    const.influence = 0.75
-            const = pose_bones[f"ORG-!arm bone0{i}.R"].constraints.new('DAMPED_TRACK')
-            const.target = context.active_object
-            const.subtarget = "DEF-!hand.R"
-        
+        for bone in "arm", "sleeve":
+            for i in range (2,4):
+                pose_bones[f"ORG-!{bone} bone0{i}.L"].constraints.remove(pose_bones[f"ORG-!{bone} bone0{i}.L"].constraints["Copy Transforms"])
+                const = pose_bones[f"ORG-!{bone} bone0{i}.L"].constraints.new('COPY_ROTATION')
+                const.target = context.active_object
+                const.subtarget = "ORG-!forearm.L"
+                # const.use_x = False
+                # const.use_z = False
+                # const.euler_order = 'XZY'
+                match i:
+                    case 2:
+                        const.influence = 0.5
+                    case 3:
+                        const.influence = 0.75
+                const = pose_bones[f"ORG-!{bone} bone0{i}.L"].constraints.new('DAMPED_TRACK')
+                const.target = context.active_object
+                const.subtarget = "DEF-!forearm.L"
+                pose_bones[f"ORG-!{bone} bone0{i}.R"].constraints.remove(pose_bones[f"ORG-!{bone} bone0{i}.R"].constraints["Copy Transforms"])
+                const = pose_bones[f"ORG-!{bone} bone0{i}.R"].constraints.new('COPY_ROTATION')
+                const.target = context.active_object
+                const.subtarget = "ORG-!forearm.R"
+                match i:
+                    case 2:
+                        const.influence = 0.5
+                    case 3:
+                        const.influence = 0.75
+                const = pose_bones[f"ORG-!{bone} bone0{i}.R"].constraints.new('DAMPED_TRACK')
+                const.target = context.active_object
+                const.subtarget = "DEF-!forearm.R"
+            for i in range (4,7):
+                pose_bones[f"ORG-!{bone} bone0{i}.L"].constraints.remove(pose_bones[f"ORG-!{bone} bone0{i}.L"].constraints["Copy Transforms"])
+                const = pose_bones[f"ORG-!{bone} bone0{i}.L"].constraints.new('COPY_ROTATION')
+                const.target = context.active_object
+                const.subtarget = "ORG-!hand.L"
+                match i:
+                    case 4:
+                        const.influence = 0.25
+                    case 5:
+                        const.influence = 0.5
+                    case 6:
+                        const.influence = 0.75
+                const = pose_bones[f"ORG-!{bone} bone0{i}.L"].constraints.new('DAMPED_TRACK')
+                const.target = context.active_object
+                const.subtarget = "DEF-!hand.L"
+                pose_bones[f"ORG-!{bone} bone0{i}.R"].constraints.remove(pose_bones[f"ORG-!{bone} bone0{i}.R"].constraints["Copy Transforms"])
+                const = pose_bones[f"ORG-!{bone} bone0{i}.R"].constraints.new('COPY_ROTATION')
+                const.target = context.active_object
+                const.subtarget = "ORG-!hand.R"
+                match i:
+                    case 4:
+                        const.influence = 0.25
+                    case 5:
+                        const.influence = 0.5
+                    case 6:
+                        const.influence = 0.75
+                const = pose_bones[f"ORG-!{bone} bone0{i}.R"].constraints.new('DAMPED_TRACK')
+                const.target = context.active_object
+                const.subtarget = "DEF-!hand.R"
+
 
         # LEGS
         for i in range (1,3):
