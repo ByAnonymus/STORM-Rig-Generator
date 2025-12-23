@@ -649,7 +649,10 @@ class STORM_Rig_Generator(bpy.types.Operator):
         edit_bones["MCH-!upperarm_tweak.R"].parent = edit_bones["ORG-!upperarm.R"]
         edit_bones["MCH-!thigh_tweak.L"].parent = edit_bones["ORG-!thigh.L"]
         edit_bones["MCH-!thigh_tweak.R"].parent = edit_bones["ORG-!thigh.R"]
-        for bone in "arm", "sleeve":
+        lst = ["arm"]
+        if bones.get("!sleeve bone01.L"):
+            lst.append("sleeve")
+        for bone in lst:
             for i in range(2,7):
                 edit_bones[f"ORG-!{bone} bone0{i}.L"].align_orientation(edit_bones["ORG-!hand.L"])
                 edit_bones[f"!{bone} bone0{i}.L"].align_orientation(edit_bones["ORG-!hand.L"])
@@ -673,7 +676,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
         pose_bones[f"ORG-!arm bone01.L"].constraints.remove(pose_bones[f"ORG-!arm bone01.L"].constraints["Copy Transforms"])
         pose_bones[f"ORG-!arm bone01.R"].constraints.remove(pose_bones[f"ORG-!arm bone01.R"].constraints["Copy Transforms"])
         # ARMS
-        for bone in "arm", "sleeve":
+        for bone in lst:
             for i in range (2,4):
                 pose_bones[f"ORG-!{bone} bone0{i}.L"].constraints.remove(pose_bones[f"ORG-!{bone} bone0{i}.L"].constraints["Copy Transforms"])
                 const = pose_bones[f"ORG-!{bone} bone0{i}.L"].constraints.new('COPY_ROTATION')
