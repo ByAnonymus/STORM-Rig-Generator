@@ -1863,7 +1863,7 @@ class STORM_Rig_Transfer(bpy.types.Operator):
                     extras = True
             else:
                 extras = bool(pose_bones[bone.name].get("extra"))
-            if (extras or "finger" in bone.name) and "ORG" not in bone.name and "DEF" not in bone.name:
+            if (extras or "finger" in bone.name) and "ORG" not in bone.name and "DEF" not in bone.name and "t0" not in bone.name:
                 if ".L" in bone.name:
                     if bones.get("l " + bone.name.removesuffix(".L").removeprefix("!")):
                         edit_bones[bone.name].parent = edit_bones["l " + bone.name.removesuffix(".L").removeprefix("!")]
@@ -1871,7 +1871,7 @@ class STORM_Rig_Transfer(bpy.types.Operator):
                     if bones.get("r " + bone.name.removesuffix(".R") .removeprefix("!")):
                         edit_bones[bone.name].parent = edit_bones["r " + bone.name.removesuffix(".R").removeprefix("!")]
                 else:
-                    if bones.get(bone.name):
+                    if bones.get(bone.name) :
                         edit_bones[bone.name].parent = edit_bones[bone.name.removeprefix("!")]
 
         bonemerge(context.active_object, bpy.data.objects[storm_arm.name], subtarget = 1, only_1_layer = True)
