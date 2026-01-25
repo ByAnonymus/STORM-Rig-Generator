@@ -1736,6 +1736,10 @@ class STORM_Rig_Transfer(bpy.types.Operator):
         return True
 
     def execute(self, context):
+        context.scene.col_prop.collections = bpy.data.objects[context.scene.byanon_active_storm_armature.name].users_collection[0].name
+        context.scene.col_prop.armatures = context.scene.byanon_active_storm_armature.name
+        bpy.ops.object.remove_char_code()
+        
         storm_arm = context.scene.byanon_active_storm_armature
         storm_rig = context.scene.byanon_active_storm_rig
 
