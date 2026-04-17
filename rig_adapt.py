@@ -1710,6 +1710,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
                     bone.custom_shape_scale_xyz[1] *= 5
                     bone.custom_shape_scale_xyz[2] *= 5
 
+        bpy.ops.byanon.face_rig_generator()
         return {"FINISHED"}
 
 class STORM_Rig_Bonemerger(bpy.types.Operator):
