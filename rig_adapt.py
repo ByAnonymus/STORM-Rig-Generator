@@ -127,6 +127,7 @@ class STORM_Adapt_Operator(bpy.types.Operator):
     def execute(self, context):
         context.scene.col_prop.collections = bpy.data.objects[context.scene.byanon_active_storm_armature.name].users_collection[0].name
         context.scene.col_prop.armatures = context.scene.byanon_active_storm_armature.name
+        context.view_layer.objects.active = bpy.data.objects[context.scene.byanon_active_storm_armature.name]
         if context.active_object.name.startswith("1"):
             context.active_object["is_storm1"] = True
         else:

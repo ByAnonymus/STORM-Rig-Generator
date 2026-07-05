@@ -382,7 +382,6 @@ class FaceGenerator(bpy.types.Operator):
         self.add_eye_driver(index=0, side="R", location=0)
         self.add_eye_driver(index=1, side="R", location=0)
 
-
         self.add_eye_driver(index=0, side="R", location=2)
         self.add_eye_driver(index=1, side="R", location=2)
 
@@ -463,11 +462,11 @@ class FaceGenerator(bpy.types.Operator):
         pose_bones["EYE_CTRL_PARENT"].custom_shape_scale_xyz[1] = 0.4
         pose_bones["EYE_CTRL_PARENT"].custom_shape_scale_xyz[2] = 0.4
 
-        pose_bones["EYE_CTRL_R"].custom_shape = bpy.data.objects["WGT-RIG-5sskbod1 [C]_RIG_neck.001"]
-        pose_bones["EYE_CTRL_L"].custom_shape = bpy.data.objects["WGT-RIG-5sskbod1 [C]_RIG_neck.001"]
+        pose_bones["EYE_CTRL_R"].custom_shape = pose_bones["neck.001"].custom_shape
+        pose_bones["EYE_CTRL_L"].custom_shape = pose_bones["neck.001"].custom_shape
 
-        pose_bones["!OFFSET_eye_L"].custom_shape = bpy.data.objects["WGT-RIG-5sskbod1 [C]_RIG_neck.001"]
-        pose_bones["!OFFSET_eye_R"].custom_shape = bpy.data.objects["WGT-RIG-5sskbod1 [C]_RIG_neck.001"]
+        pose_bones["!OFFSET_eye_L"].custom_shape = pose_bones["neck.001"].custom_shape
+        pose_bones["!OFFSET_eye_R"].custom_shape = pose_bones["neck.001"].custom_shape
 
         pose_bones["EYE_CTRL_R"].custom_shape_translation[1] = -0.01
         pose_bones["EYE_CTRL_L"].custom_shape_translation[1] = -0.01
@@ -500,24 +499,25 @@ class FaceGenerator(bpy.types.Operator):
         constraint.targets[1].weight = 1-inf
     def add_eye_driver(self, index=0, side="L", location=0):
         input =1 if location == 0 else 2
-        driver = bpy.context.active_object.material_slots[0].material.node_tree.driver_add(f"nodes[\"uvOffset{index}\"].inputs[{input}].default_value").driver
-        driver.type = "SCRIPTED"
-        def_value = bpy.context.active_object.material_slots[0].material.node_tree.nodes[f"uvOffset{index}"].inputs[input].default_value
-        if input == 1:
-            # HelloWorld(print);
-            driver.expression = f"{def_value}-(child+parent)*2"
-        else:
-            driver.expression = f"{def_value}+(child+parent)*2"
+        if bool(bpy.context.active_object.material_slots[0].material.node_tree.nodes.get(f"uvOffset{index}")):
+            driver = bpy.context.active_object.material_slots[0].material.node_tree.driver_add(f"nodes[\"uvOffset{index}\"].inputs[{input}].default_value").driver
+            driver.type = "SCRIPTED"
+            def_value = bpy.context.active_object.material_slots[0].material.node_tree.nodes[f"uvOffset{index}"].inputs[input].default_value
+            if input == 1:
+                # HelloWorld(print);
+                driver.expression = f"{def_value}-(child+parent)*2"
+            else:
+                driver.expression = f"{def_value}+(child+parent)*2"
 
-        var = driver.variables.new()
-        var.name = "child"
-        var.targets[0].id = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
-        var.targets[0].data_path = f'pose.bones["EYE_CTRL_{side}"].location[{location}]'
+            var = driver.variables.new()
+            var.name = "child"
+            var.targets[0].id = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+            var.targets[0].data_path = f'pose.bones["EYE_CTRL_{side}"].location[{location}]'
 
-        var = driver.variables.new()
-        var.name = "parent"
-        var.targets[0].id = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
-        var.targets[0].data_path = f'pose.bones["EYE_CTRL_PARENT"].location[{location}]'
+            var = driver.variables.new()
+            var.name = "parent"
+            var.targets[0].id = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+            var.targets[0].data_path = f'pose.bones["EYE_CTRL_PARENT"].location[{location}]'
 
 class BakeEyes(bpy.types.Operator):
     bl_idname = "byanon.bake_eyes"
@@ -535,34 +535,72 @@ class BakeEyes(bpy.types.Operator):
         i = 0
         _l = False
         _r = False
+        mode(mode="OBJECT")
+        bpy.ops.object.select_all(action="DESELECT")
+        bpy.data.objects[context.scene.byanon_active_storm_armature.name].select_set(True)
+        context.view_layer.objects.active = bpy.data.objects[context.scene.byanon_active_storm_armature.name]
+        mode(mode="POSE")
         if self.bake_rig:
-            context.view_layer.objects.active = bpy.data.objects[context.scene.byanon_active_storm_armature.name]
-            mode(mode="POSE")
-            bpy.ops.nla.bake(frame_start=context.scene.frame_start, frame_end=context.scene.frame_end, bake_types={'POSE'},use_current_action=True)
-
+            bpy.ops.nla.bake(frame_start=context.scene.frame_start, frame_end=context.scene.frame_end, bake_types={'POSE'},use_current_action=True, only_selected=False)
+        context.scene.xfbin_scene.active_action = context.active_object.animation_data.action
+        mode(mode="OBJECT")
+        bpy.ops.object.select_all(action="DESELECT")
+        bpy.data.objects[context.scene.byanon_active_storm_rig.name].select_set(True)
+        context.view_layer.objects.active = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
+        mode(mode="POSE")
+        pose_bones = bpy.context.active_object.pose.bones
+        # lst = []
         for mat in context.scene.xfbin_scene.xfbin_materials:
             if mat.material.name.endswith(bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"].material_slots[0].material.name) or mat.material.name.endswith(bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"].material_slots[0].material.name):
-                for frame in range(context.scene.frame_start,context.scene.frame_end+1):
-                    context.scene.frame_set(frame)
-                    context.view_layer.update()
-                    if mat.material.name.endswith("_l"):
-                        obj_name = bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"
-                    else:
-                        obj_name = bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"
-
+                # for frame in range(context.scene.frame_start,context.scene.frame_end+1):
+                context.scene.frame_set(context.scene.frame_start)
+                # context.view_layer.update()
+                if mat.material.name.endswith("_l"):
+                    obj_name = bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"
+                else:
+                    obj_name = bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"
+                
+                def material_bullshit():
                     mat.uvOffset0[0] = bpy.data.objects[obj_name].material_slots[0].material.node_tree.nodes[f"uvOffset0"].inputs[1].default_value
                     mat.uvOffset0[1] = bpy.data.objects[obj_name].material_slots[0].material.node_tree.nodes[f"uvOffset0"].inputs[2].default_value
                     mat.uvOffset1[0] = bpy.data.objects[obj_name].material_slots[0].material.node_tree.nodes[f"uvOffset0"].inputs[1].default_value
                     mat.uvOffset1[1] = bpy.data.objects[obj_name].material_slots[0].material.node_tree.nodes[f"uvOffset0"].inputs[2].default_value
+                    mat.uvScale0[0] = bpy.data.objects[obj_name].material_slots[0].material.node_tree.nodes[f"uvOffset0"].inputs[3].default_value
+                    mat.uvScale0[1] = bpy.data.objects[obj_name].material_slots[0].material.node_tree.nodes[f"uvOffset0"].inputs[4].default_value
                     mat.uvScale1[0] = bpy.data.objects[obj_name].material_slots[0].material.node_tree.nodes[f"uvOffset0"].inputs[3].default_value
                     mat.uvScale1[1] = bpy.data.objects[obj_name].material_slots[0].material.node_tree.nodes[f"uvOffset0"].inputs[4].default_value
-                    mat.uvScale2[0] = bpy.data.objects[obj_name].material_slots[0].material.node_tree.nodes[f"uvOffset0"].inputs[3].default_value
-                    mat.uvScale2[1] = bpy.data.objects[obj_name].material_slots[0].material.node_tree.nodes[f"uvOffset0"].inputs[4].default_value
                     mat.blendRate[0] =  bpy.data.objects[obj_name].material_slots[0].material.xfbin_material_data.blendRate[0]
                     mat.blendRate[1] =  bpy.data.objects[obj_name].material_slots[0].material.xfbin_material_data.blendRate[1]
                     mat.alpha =  bpy.data.objects[obj_name].material_slots[0].material.xfbin_material_data.alpha
                     mat.glare =  bpy.data.objects[obj_name].material_slots[0].material.xfbin_material_data.glare
                     bpy.ops.xfbin_scene.add_keyframe(category='MATERIAL', material_index=i, slot_name="")
+                material_bullshit()
+                bpy.ops.pose.select_all(action="DESELECT")
+                pose_bones["EYE_CTRL_PARENT"].bone.select = True
+                last_frame = context.scene.frame_current
+                bpy.ops.screen.keyframe_jump(next=True)
+                while context.scene.frame_current != last_frame:
+                    material_bullshit()
+                    last_frame = context.scene.frame_current
+                    bpy.ops.screen.keyframe_jump(next=True)
+                if mat.material.name.endswith("_l"):
+                    bpy.ops.pose.select_all(action="DESELECT")
+                    pose_bones["EYE_CTRL_L"].bone.select = True
+                    last_frame = context.scene.frame_current
+                    bpy.ops.screen.keyframe_jump(next=True)
+                    while context.scene.frame_current != last_frame:
+                        material_bullshit()
+                        last_frame = context.scene.frame_current
+                        bpy.ops.screen.keyframe_jump(next=True)
+                else:
+                    bpy.ops.pose.select_all(action="DESELECT")
+                    pose_bones["EYE_CTRL_PARENT"].bone.select = True
+                    last_frame = context.scene.frame_current
+                    bpy.ops.screen.keyframe_jump(next=True)
+                    while context.scene.frame_current != last_frame:
+                        material_bullshit()
+                        last_frame = context.scene.frame_current
+                        bpy.ops.screen.keyframe_jump(next=True)
                 if mat.material.name.endswith("_l"):
                     _l = True
                 else:
@@ -580,12 +618,26 @@ class BakeEyes(bpy.types.Operator):
             mat = context.scene.xfbin_scene.xfbin_materials[i-1]
             mat.material = bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"].material_slots[0].material
             mat.name = slot_name+"::"+mat.material.name
+
+            bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"].material_slots[0].material.node_tree.nodes["SceneUVoffset0"].attribute_name = f"xfbin_scene.xfbin_materials[\"{mat.name}\"].uvOffset0"
+            bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"].material_slots[0].material.node_tree.nodes["SceneUVscale0"].attribute_name = f"xfbin_scene.xfbin_materials[\"{mat.name}\"].uvScale0"
+            bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"].material_slots[0].material.node_tree.nodes["SceneUVoffset1"].attribute_name = f"xfbin_scene.xfbin_materials[\"{mat.name}\"].uvOffset1"
+            bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"].material_slots[0].material.node_tree.nodes["SceneUVscale1"].attribute_name = f"xfbin_scene.xfbin_materials[\"{mat.name}\"].uvScale1"
+            bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"].material_slots[0].material.node_tree.nodes["SceneBlendRate"].attribute_name = f"xfbin_scene.xfbin_materials[\"{mat.name}\"].blendRate"
         if len(context.scene.xfbin_scene.xfbin_materials) == i and _r == False:
             bpy.ops.xfbin_scene_mat.add()
             i+=1
             mat = context.scene.xfbin_scene.xfbin_materials[i-1]
             mat.material = bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"].material_slots[0].material
             mat.name = slot_name+"::"+mat.material.name
+
+            bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"].material_slots[0].material.node_tree.nodes["SceneUVoffset0"].attribute_name = f"xfbin_scene.xfbin_materials[\"{mat.name}\"].uvOffset0"
+            bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"].material_slots[0].material.node_tree.nodes["SceneUVscale0"].attribute_name = f"xfbin_scene.xfbin_materials[\"{mat.name}\"].uvScale0"
+            bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"].material_slots[0].material.node_tree.nodes["SceneUVoffset1"].attribute_name = f"xfbin_scene.xfbin_materials[\"{mat.name}\"].uvOffset1"
+            bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"].material_slots[0].material.node_tree.nodes["SceneUVscale1"].attribute_name = f"xfbin_scene.xfbin_materials[\"{mat.name}\"].uvScale1"
+            bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"].material_slots[0].material.node_tree.nodes["SceneBlendRate"].attribute_name = f"xfbin_scene.xfbin_materials[\"{mat.name}\"].blendRate"
+
+            
         self.execute(context)
         return {"FINISHED"}
 
