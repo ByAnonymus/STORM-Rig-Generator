@@ -615,9 +615,10 @@ class bfl_byanon_OT_initialize(ot):
             ("Leg.R (IK)", "IK", 11, ""),
             ("Leg.R (FK)", "FK", 12, "(FK)"),
             ("Leg.R (Tweak)", "Tweak", 13, "(Tweak)"),
-            ('Extras', 'Extra', 17, ''),
-            (context.scene.byanon_extra_layer, 'Extra', 18, ''),
-            ("Root", "Root", 16, ""),
+            ('Extras', 'Extra', 19, ''),
+            ('Face', 'Face', 16, ''),
+            (context.scene.byanon_extra_layer, 'Extra', 20, ''),
+            ("Root", "Root", 17, ""),
         )
         for name, color, row, title in layers:
             new = bpy.context.object.data.collections.new(name=name)

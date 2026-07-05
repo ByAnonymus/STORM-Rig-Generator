@@ -8,8 +8,6 @@ def isolate(context: bpy.types.Context, object):
     object.select_set(True)
     context.view_layer.objects.active = object
 
-# from .rigi_all import rigi_all as rigi
-#  bpy.context.view_layer.objects.active = bpy.data.objects[bpy.context.scene.byanon_active_storm_armature.name]
 def stretch_driver(driver, legs = False, side = "L"):
     driver.type = 'SCRIPTED'
     driver.expression = "1 if stretch != 0 else 0"
@@ -129,6 +127,10 @@ class STORM_Adapt_Operator(bpy.types.Operator):
     def execute(self, context):
         context.scene.col_prop.collections = bpy.data.objects[context.scene.byanon_active_storm_armature.name].users_collection[0].name
         context.scene.col_prop.armatures = context.scene.byanon_active_storm_armature.name
+        if context.active_object.name.startswith("1"):
+            context.active_object["is_storm1"] = True
+        else:
+            context.active_object["is_storm1"] = False
         bpy.ops.object.remove_char_code()
         old_obj = bpy.data.objects[context.scene.byanon_active_storm_armature.name]
         old_obj.select_set(True)
@@ -1074,6 +1076,8 @@ class STORM_Rig_Generator(bpy.types.Operator):
         bones.id_data.name = bones.id_data.name.removesuffix("_RIG")
         context.active_object.name = bones.id_data.name
         context.scene.byanon_active_storm_rig = bones.id_data
+
+        bpy.data.objects[context.scene.byanon_active_storm_rig.name]["is_storm1"] = bpy.data.objects[context.scene.byanon_active_storm_armature.name]["is_storm1"]
         
         for drv in obj_rigify.animation_data.drivers:
             for val in drv.driver.variables:
@@ -1720,8 +1724,13 @@ class STORM_Rig_Bonemerger(bpy.types.Operator):
     bl_options = {"UNDO"}
 
     def execute(self, context):
+        mode(mode="OBJECT")
+        context.scene.col_prop.collections = bpy.data.objects[context.scene.byanon_active_storm_armature.name].users_collection[0].name
+        context.scene.col_prop.armatures = context.scene.byanon_active_storm_armature.name
+        bpy.ops.object.remove_char_code()
         i = bpy.data.objects[context.scene.byanon_active_storm_armature.name]
         obj = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
+        mode(mode="POSE")
         bonemerge(i, obj)
 
         return {"FINISHED"}
@@ -1743,6 +1752,9 @@ class STORM_Rig_Transfer(bpy.types.Operator):
         
         storm_arm = context.scene.byanon_active_storm_armature
         storm_rig = context.scene.byanon_active_storm_rig
+        # storm_arm.select_set(True)
+        # context.view_layer.objects.active = storm_arm
+        # bpy.ops.byanon.storm_rig_unbonemerger()
 
         bpy.data.objects[storm_rig.name].pose.bones["thigh_parent.L"]["IK_FK"] = 1.0
         bpy.data.objects[storm_rig.name].pose.bones["thigh_parent.R"]["IK_FK"] = 1.0
@@ -1767,7 +1779,7 @@ class STORM_Rig_Transfer(bpy.types.Operator):
         new_object.select_set(True)
         context.view_layer.objects.active = new_object
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
-        new_armature.animation_data.action = None
+        # new_armature.animation_data.action = None
         new_armature.animation_data_clear()
         edit_bones = context.active_object.data.edit_bones
         pose_bones = context.active_object.pose.bones
@@ -1880,7 +1892,7 @@ class STORM_Rig_Transfer(bpy.types.Operator):
                     if bones.get("r " + bone.name.removesuffix(".R") .removeprefix("!")):
                         edit_bones[bone.name].parent = edit_bones["r " + bone.name.removesuffix(".R").removeprefix("!")]
                 else:
-                    if bones.get(bone.name) :
+                    if bones.get(bone.name.removeprefix("!")):
                         edit_bones[bone.name].parent = edit_bones[bone.name.removeprefix("!")]
 
         bonemerge(context.active_object, bpy.data.objects[storm_arm.name], subtarget = 1, only_1_layer = True)
