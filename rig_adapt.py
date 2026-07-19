@@ -53,7 +53,7 @@ def set_parents():
         elif i == "trall.001":
             parent_bone = "root"
         elif i.endswith("t0.001"):
-            parent_bone = "trall.001"
+            parent_bone = "pelvis.001"
         else:
             parent_bone = "DEF-"+i.removesuffix(".001")
         if bpy.context.active_object.data.edit_bones.get(parent_bone):
