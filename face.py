@@ -469,29 +469,80 @@ class FaceGenerator(bpy.types.Operator):
         pose_bones["mayu_parent.L"].custom_shape_scale_xyz[2] = 2
         pose_bones["mayu_parent.L"].custom_shape_rotation_euler[1] = math.radians(-10)
 
-        # with bpy.data.libraries.load(f"{path}/blender/geo_node.blend") as (data_from, data_to):
-        #     data_to.node_groups = data_from.node_groups
-        # bpy.context.scene.collection.objects.link(bpy.data.objects["EYE_CTRL_R"])
-        # bpy.context.scene.collection.objects.link(bpy.data.objects["EYE_CTRL_L"])
-        # obj_l = bpy.data.objects["EYE_CTRL_L"]
-        # obj_r = bpy.data.objects["EYE_CTRL_R"]
+        with bpy.data.libraries.load(f"{path}/blender/geo_node.blend") as (data_from, data_to):
+            data_to.node_groups = data_from.node_groups
+        bpy.context.scene.collection.objects.link(bpy.data.objects["EYE_CTRL_R"])
+        bpy.context.scene.collection.objects.link(bpy.data.objects["EYE_CTRL_L"])
+        obj_l = bpy.data.objects["EYE_CTRL_L"]
+        obj_r = bpy.data.objects["EYE_CTRL_R"]
 
-        # obj_l.name += "_" + bpy.context.scene.byanon_active_storm_rig.name
-        # obj_r.name += "_" + bpy.context.scene.byanon_active_storm_rig.name
+        obj_l.name += "_" + bpy.context.scene.byanon_active_storm_rig.name
+        obj_r.name += "_" + bpy.context.scene.byanon_active_storm_rig.name
 
-        # obj_l.constraints["COPY_PARENT"].target = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
-        # obj_l.constraints["COPY_PARENT"].subtarget = "EYE_CTRL_PARENT"
-        # obj_l.constraints["COPY_L"].target = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
-        # obj_l.constraints["COPY_L"].subtarget = "EYE_CTRL_L"
+        obj_l.constraints["COPY_PARENT"].target = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+        obj_l.constraints["COPY_PARENT"].subtarget = "EYE_CTRL_PARENT"
+        obj_l.constraints["COPY_L"].target = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+        obj_l.constraints["COPY_L"].subtarget = "EYE_CTRL_L"
 
-        # obj_r.constraints["COPY_PARENT"].target = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
-        # obj_r.constraints["COPY_PARENT"].subtarget = "EYE_CTRL_PARENT"
-        # obj_r.constraints["COPY_R"].target = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
-        # obj_r.constraints["COPY_R"].subtarget = "EYE_CTRL_R"
+        obj_r.constraints["COPY_PARENT"].target = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+        obj_r.constraints["COPY_PARENT"].subtarget = "EYE_CTRL_PARENT"
+        obj_r.constraints["COPY_R"].target = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+        obj_r.constraints["COPY_R"].subtarget = "EYE_CTRL_R"
+
+        obj_name = bpy.data.objects[bpy.context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"
+        bpy.context.view_layer.objects.active = bpy.data.objects[obj_name]
+        
+        mod = bpy.data.objects[obj_name].modifiers.new(name = "GEO NODE", type='NODES')
+        mod.node_group = bpy.data.node_groups["EYE_L"]
+        material = bpy.context.active_object.material_slots[0].material
+        nodes = material.node_tree.nodes
+        links = material.node_tree.links
+
+        nodes.new("ShaderNodeAttribute")
+        node = nodes["Attribute"]
+        node.name = "eye_empty_x"
+        node.attribute_name = "eye_empty_x"
+
+        if nodes.get("uvOffset0"):
+            links.new(node.outputs["Vector"], nodes["uvOffset0"].inputs[1])
+        if nodes.get("uvOffset1"):
+            links.new(node.outputs["Vector"], nodes["uvOffset1"].inputs[1])
+
+        nodes.new("ShaderNodeAttribute")
+        node = nodes["Attribute"]
+        node.name = "eye_empty_y"
+        node.attribute_name = "eye_empty_y"
+        if nodes.get("uvOffset0"):
+            links.new(node.outputs["Vector"], nodes["uvOffset0"].inputs[2])
+        if nodes.get("uvOffset1"):
+            links.new(node.outputs["Vector"], nodes["uvOffset1"].inputs[2])
+
+        obj_name = bpy.data.objects[bpy.context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"
+        bpy.context.view_layer.objects.active = bpy.data.objects[obj_name]
+        mod = bpy.data.objects[obj_name].modifiers.new(name = "GEO NODE", type='NODES')
+        mod.node_group = bpy.data.node_groups["EYE_R"]
+        
+        material = bpy.context.active_object.material_slots[0].material
+        nodes = material.node_tree.nodes
+        links = material.node_tree.links
+
+        nodes.new("ShaderNodeAttribute")
+        node = nodes["Attribute"]
+        node.name = "eye_empty_x"
+        node.attribute_name = "eye_empty_x"
+
+        links.new(node.outputs["Vector"], nodes["uvOffset0"].inputs[1])
+
+        nodes.new("ShaderNodeAttribute")
+        node = nodes["Attribute"]
+        node.name = "eye_empty_y"
+        node.attribute_name = "eye_empty_y"
+
+        links.new(node.outputs["Vector"], nodes["uvOffset0"].inputs[2])
 
 
-        # obj_name = bpy.data.objects[bpy.context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"
-        # bpy.context.view_layer.objects.active = bpy.data.objects[obj_name]
+        bpy.context.view_layer.objects.active = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+        mode(mode="POSE")
         arm.data.collections_all["ORG"].is_visible = False
     def add_to_col_exclusive(self,bone,col):
         bone.collections.clear()
@@ -570,7 +621,8 @@ class BakeEyes(bpy.types.Operator):
                 else:
                     obj_name = bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"
                 
-                def material_bullshit():
+                def material_bullshit(obj_name):
+                    context.view_layer.objects.active = bpy.data.objects[obj_name]
                     obj = bpy.context.object.evaluated_get(bpy.context.evaluated_depsgraph_get()).data
                     mat.uvOffset0[0] = obj.attributes['eye_empty_x'].data[0].value
                     mat.uvOffset0[1] =  obj.attributes['eye_empty_y'].data[0].value
@@ -585,13 +637,15 @@ class BakeEyes(bpy.types.Operator):
                     mat.alpha =  bpy.data.objects[obj_name].material_slots[0].material.xfbin_material_data.alpha
                     mat.glare =  bpy.data.objects[obj_name].material_slots[0].material.xfbin_material_data.glare
                     bpy.ops.xfbin_scene.add_keyframe(category='MATERIAL', material_index=i, slot_name="")
-                material_bullshit()
+                    context.view_layer.objects.active = bpy.data.objects[context.scene.byanon_active_storm_rig.name]
+                material_bullshit(obj_name)
+                mode(mode='POSE')
                 bpy.ops.pose.select_all(action="DESELECT")
                 pose_bones["EYE_CTRL_PARENT"].bone.select = True
                 last_frame = context.scene.frame_current
                 bpy.ops.screen.keyframe_jump(next=True)
                 while context.scene.frame_current != last_frame:
-                    material_bullshit()
+                    material_bullshit(obj_name)
                     last_frame = context.scene.frame_current
                     bpy.ops.screen.keyframe_jump(next=True)
                 if mat.material.name.endswith("_l"):
@@ -600,7 +654,7 @@ class BakeEyes(bpy.types.Operator):
                     last_frame = context.scene.frame_current
                     bpy.ops.screen.keyframe_jump(next=True)
                     while context.scene.frame_current != last_frame:
-                        material_bullshit()
+                        material_bullshit(obj_name)
                         last_frame = context.scene.frame_current
                         bpy.ops.screen.keyframe_jump(next=True)
                 else:
