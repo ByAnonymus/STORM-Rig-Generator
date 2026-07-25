@@ -28,7 +28,7 @@ def set_parents():
             if i.layers[0]:
                 list.append(i.name)
         else:
-            if i in bpy.context.active_object.data.collections["STORM"].bones_recursive:
+            if i in bpy.context.active_object.data.collections["underlying"].bones_recursive:
                 list.append(i.name)
     bpy.ops.object.mode_set(mode='EDIT')
     for i in list:
@@ -42,6 +42,7 @@ def set_parents():
             bpy.context.active_object.data.edit_bones[i].parent = bpy.context.active_object.data.edit_bones[parent_bone]
             list.remove(i)
     for i in list:
+        bpy.context.active_object.data.edit_bones[i].parent = None
         if "r " in i:
             parent_bone = "DEF-"+i.removeprefix("r ").removesuffix(".001") + ".R"
             if bool(bpy.context.active_object.data.edit_bones.get(parent_bone)) == False:
@@ -50,10 +51,10 @@ def set_parents():
             parent_bone = "DEF-"+i.removeprefix("l ").removesuffix(".001") + ".L"
             if bool(bpy.context.active_object.data.edit_bones.get(parent_bone)) == False:
                 parent_bone = "DEF-"+i.removesuffix(".001")
-        elif i == "trall.001":
+        elif i == "trall":
             parent_bone = "root"
-        elif i.endswith("t0.001"):
-            parent_bone = "pelvis.001"
+        elif i.endswith("t0"):
+            parent_bone = "pelvis"
         else:
             parent_bone = "DEF-"+i.removesuffix(".001")
         if bpy.context.active_object.data.edit_bones.get(parent_bone):
@@ -1714,6 +1715,9 @@ class STORM_Rig_Generator(bpy.types.Operator):
                     bone.custom_shape_scale_xyz[0] *= 5
                     bone.custom_shape_scale_xyz[1] *= 5
                     bone.custom_shape_scale_xyz[2] *= 5
+        mode(mode="EDIT")
+        edit_bones[context.scene.byanon_active_storm_armature.bones[1].name].parent = edit_bones["pelvis"]
+        mode(mode="POSE")
         if context.scene.byanon_face_toggle:
             bpy.ops.byanon.face_rig_generator()
         return {"FINISHED"}

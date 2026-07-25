@@ -1,5 +1,6 @@
-import bpy, math
+import bpy, math, os
 from .rig_adapt import mode
+path = os.path.dirname(os.path.realpath(__file__))
 class FaceGenerator(bpy.types.Operator):
     bl_idname = "byanon.face_rig_generator"
     bl_label = "My Class Name"
@@ -379,12 +380,6 @@ class FaceGenerator(bpy.types.Operator):
         for i in range(1, 5):
             bpy.context.active_object.material_slots[0].material.node_tree.driver_remove(f"nodes[\"uvOffset0\"].inputs[{i}].default_value")
         
-        self.add_eye_driver(index=0, side="R", location=0)
-        self.add_eye_driver(index=1, side="R", location=0)
-
-        self.add_eye_driver(index=0, side="R", location=2)
-        self.add_eye_driver(index=1, side="R", location=2)
-
         bpy.context.view_layer.objects.active = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
         mode(mode="EDIT")
         edit_bones["EYE_CTRL_PARENT"].head.x += (edit_bones["EYE_CTRL_L"].head.x-edit_bones["EYE_CTRL_PARENT"].head.x)*.5
@@ -401,13 +396,6 @@ class FaceGenerator(bpy.types.Operator):
         bpy.context.view_layer.objects.active = bpy.data.objects[bpy.data.objects[bpy.context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"]
         for i in range(1, 5):
             bpy.context.active_object.material_slots[0].material.node_tree.driver_remove(f"nodes[\"uvOffset0\"].inputs[{i}].default_value")
-        
-        self.add_eye_driver(index=0, side="L", location=0)
-        self.add_eye_driver(index=1, side="L", location=0)
-
-
-        self.add_eye_driver(index=0, side="L", location=2)
-        self.add_eye_driver(index=1, side="L", location=2)
         
         bpy.context.view_layer.objects.active = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
         mode(mode="POSE")
@@ -481,8 +469,30 @@ class FaceGenerator(bpy.types.Operator):
         pose_bones["mayu_parent.L"].custom_shape_scale_xyz[2] = 2
         pose_bones["mayu_parent.L"].custom_shape_rotation_euler[1] = math.radians(-10)
 
-        arm.data.collections_all["ORG"].is_visible = False 
+        # with bpy.data.libraries.load(f"{path}/blender/geo_node.blend") as (data_from, data_to):
+        #     data_to.node_groups = data_from.node_groups
+        # bpy.context.scene.collection.objects.link(bpy.data.objects["EYE_CTRL_R"])
+        # bpy.context.scene.collection.objects.link(bpy.data.objects["EYE_CTRL_L"])
+        # obj_l = bpy.data.objects["EYE_CTRL_L"]
+        # obj_r = bpy.data.objects["EYE_CTRL_R"]
 
+        # obj_l.name += "_" + bpy.context.scene.byanon_active_storm_rig.name
+        # obj_r.name += "_" + bpy.context.scene.byanon_active_storm_rig.name
+
+        # obj_l.constraints["COPY_PARENT"].target = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+        # obj_l.constraints["COPY_PARENT"].subtarget = "EYE_CTRL_PARENT"
+        # obj_l.constraints["COPY_L"].target = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+        # obj_l.constraints["COPY_L"].subtarget = "EYE_CTRL_L"
+
+        # obj_r.constraints["COPY_PARENT"].target = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+        # obj_r.constraints["COPY_PARENT"].subtarget = "EYE_CTRL_PARENT"
+        # obj_r.constraints["COPY_R"].target = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+        # obj_r.constraints["COPY_R"].subtarget = "EYE_CTRL_R"
+
+
+        # obj_name = bpy.data.objects[bpy.context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"
+        # bpy.context.view_layer.objects.active = bpy.data.objects[obj_name]
+        arm.data.collections_all["ORG"].is_visible = False
     def add_to_col_exclusive(self,bone,col):
         bone.collections.clear()
         col.assign(bone)
@@ -497,27 +507,27 @@ class FaceGenerator(bpy.types.Operator):
         constraint.targets[1].target = pose_bones["!OFFSET_eye_L"].id_data
         constraint.targets[1].subtarget = subtarget2
         constraint.targets[1].weight = 1-inf
-    def add_eye_driver(self, index=0, side="L", location=0):
-        input =1 if location == 0 else 2
-        if bool(bpy.context.active_object.material_slots[0].material.node_tree.nodes.get(f"uvOffset{index}")):
-            driver = bpy.context.active_object.material_slots[0].material.node_tree.driver_add(f"nodes[\"uvOffset{index}\"].inputs[{input}].default_value").driver
-            driver.type = "SCRIPTED"
-            def_value = bpy.context.active_object.material_slots[0].material.node_tree.nodes[f"uvOffset{index}"].inputs[input].default_value
-            if input == 1:
-                # HelloWorld(print);
-                driver.expression = f"{def_value}-(child+parent)*2"
-            else:
-                driver.expression = f"{def_value}+(child+parent)*2"
+    # def add_eye_driver(self, index=0, side="L", location=0):
+    #     input =1 if location == 0 else 2
+    #     if bool(bpy.context.active_object.material_slots[0].material.node_tree.nodes.get(f"uvOffset{index}")):
+    #         driver = bpy.context.active_object.material_slots[0].material.node_tree.driver_add(f"nodes[\"uvOffset{index}\"].inputs[{input}].default_value").driver
+    #         driver.type = "SCRIPTED"
+    #         def_value = bpy.context.active_object.material_slots[0].material.node_tree.nodes[f"uvOffset{index}"].inputs[input].default_value
+    #         if input == 1:
+    #             # HelloWorld(print);
+    #             driver.expression = f"{def_value}-(child+parent)*2"
+    #         else:
+    #             driver.expression = f"{def_value}+(child+parent)*2"
 
-            var = driver.variables.new()
-            var.name = "child"
-            var.targets[0].id = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
-            var.targets[0].data_path = f'pose.bones["EYE_CTRL_{side}"].location[{location}]'
+    #         var = driver.variables.new()
+    #         var.name = "child"
+    #         var.targets[0].id = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+    #         var.targets[0].data_path = f'pose.bones["EYE_CTRL_{side}"].location[{location}]'
 
-            var = driver.variables.new()
-            var.name = "parent"
-            var.targets[0].id = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
-            var.targets[0].data_path = f'pose.bones["EYE_CTRL_PARENT"].location[{location}]'
+    #         var = driver.variables.new()
+    #         var.name = "parent"
+    #         var.targets[0].id = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
+    #         var.targets[0].data_path = f'pose.bones["EYE_CTRL_PARENT"].location[{location}]'
 
 class BakeEyes(bpy.types.Operator):
     bl_idname = "byanon.bake_eyes"
@@ -561,10 +571,11 @@ class BakeEyes(bpy.types.Operator):
                     obj_name = bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"
                 
                 def material_bullshit():
-                    mat.uvOffset0[0] = bpy.data.objects[obj_name].material_slots[0].material.node_tree.nodes[f"uvOffset0"].inputs[1].default_value
-                    mat.uvOffset0[1] = bpy.data.objects[obj_name].material_slots[0].material.node_tree.nodes[f"uvOffset0"].inputs[2].default_value
-                    mat.uvOffset1[0] = bpy.data.objects[obj_name].material_slots[0].material.node_tree.nodes[f"uvOffset0"].inputs[1].default_value
-                    mat.uvOffset1[1] = bpy.data.objects[obj_name].material_slots[0].material.node_tree.nodes[f"uvOffset0"].inputs[2].default_value
+                    obj = bpy.context.object.evaluated_get(bpy.context.evaluated_depsgraph_get()).data
+                    mat.uvOffset0[0] = obj.attributes['eye_empty_x'].data[0].value
+                    mat.uvOffset0[1] =  obj.attributes['eye_empty_y'].data[0].value
+                    mat.uvOffset1[0] = obj.attributes['eye_empty_x'].data[0].value
+                    mat.uvOffset1[1] = obj.attributes['eye_empty_y'].data[0].value
                     mat.uvScale0[0] = bpy.data.objects[obj_name].material_slots[0].material.node_tree.nodes[f"uvOffset0"].inputs[3].default_value
                     mat.uvScale0[1] = bpy.data.objects[obj_name].material_slots[0].material.node_tree.nodes[f"uvOffset0"].inputs[4].default_value
                     mat.uvScale1[0] = bpy.data.objects[obj_name].material_slots[0].material.node_tree.nodes[f"uvOffset0"].inputs[3].default_value
