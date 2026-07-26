@@ -14,7 +14,9 @@
       "maintainer": "ByAnon",
       "license": [
         "SPDX:GPL-3.0-or-later"
-      ]
+      ],
+      "archive_size": 246058,
+      "archive_hash":"sha256:7987f739cde2decfb028019e7c17de8e8193de35a6de72edb6956b3f1c38361a"
     }
   ]
 }
