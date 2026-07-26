@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "data": [
+    {
+      "schema_version": "1.0.0",
+      "id": "storm_rig_generator",
+      "name": "STORM Rig Generator",
+      "tagline": "Control rig for STORM armatures",
+      "version": "2.0.0",
+      "type": "add-on",
+      "archive_url": "https://github.com/ByAnonymus/STORM-Rig-Generator/archive/refs/tags/v2.0.0.zip",
+      "blender_version_min": "4.2.0",
+      "maintainer": "ByAnon"
+    }
+  ]
+}

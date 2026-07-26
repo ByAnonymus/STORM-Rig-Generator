@@ -1,0 +1,19 @@
+schema_version = "1.0.0"
+
+id = "storm_rig_generator"
+version = "2.0.0"
+
+name = "STORM Rig Generator"
+tagline = "Control rig for STORM armatures"
+maintainer = "ByAnon"
+
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = [
+    "SPDX:GPL-3.0-or-later"
+]
+
+[permissions]
+files = "Access files for rig generation"
