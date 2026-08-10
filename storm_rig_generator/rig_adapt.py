@@ -1340,7 +1340,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
             pose_bones[f"ORG-{finger}2.L"].constraints.remove(pose_bones[f"ORG-{finger}2.L"].constraints["FingerIK"])
 
             mode(mode="EDIT")
-        
+
         # RIGHT SIDE
 
         pose_bones["MCH-finger0_ik.parent.R"].constraints["SWITCH_PARENT"].targets[0].subtarget="MCH-upperarm_ik_target.R"
@@ -1590,7 +1590,31 @@ class STORM_Rig_Generator(bpy.types.Operator):
         # pose_bones["MCH-calf_ik.L"].ik_stiffness_x = .99
         # pose_bones["MCH-calf_ik.R"].ik_stiffness_x = .99
 
-        bpy.ops.object.mode_set(mode='EDIT')
+        mode(mode='EDIT')
+        copy_bone_props("root_parent", edit_bones["root"],set_as_parent = True)
+        edit_bones["root"].name = "root_dupe"
+        edit_bones["root_parent"].name = "root"
+        copy_bone_props("root_pivot", edit_bones["root_dupe"], parent="root")
+        edit_bones["root_pivot"].length /=10
+        copy_bone_props("MCH-root_pivot", edit_bones["root_pivot"], parent="root_pivot")
+        edit_bones["root_dupe"].parent = edit_bones["MCH-root_pivot"]
+
+        mode(mode='POSE')
+        bones["root_dupe"].hide = True
+        bones["MCH-root_pivot"].hide=True
+        con =pose_bones["MCH-root_pivot"].constraints.new('COPY_LOCATION')
+        con.target = context.active_object
+        con.subtarget = "root_pivot"
+        con.target_space = 'LOCAL'
+        con.owner_space = 'LOCAL'
+        con.invert_x = True
+        con.invert_y = True
+        con.invert_z = True
+
+        pose_bones["root_pivot"].custom_shape = bpy.data.objects.get(f"WGT-{context.active_object.name}_RIG_!hand_ik_pivot.L")
+        pose_bones["root"].custom_shape = pose_bones["root_dupe"].custom_shape
+        context.active_object.data.collections_all["Root"].assign(bones["root"])
+        context.active_object.data.collections_all["Root"].assign(bones["root_pivot"])
 
         # edit_bones["MCH-toe0_ik_parent.L"].parent = edit_bones["MCH-foot_tweak.L"]
         # edit_bones["MCH-toe0_ik_parent.L"].use_connect = False
