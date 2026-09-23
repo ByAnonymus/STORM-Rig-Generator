@@ -1,22 +1,22 @@
 {
-  "schema_version": "1.0.1",
-  "version":"2.0.1",
+  "schema_version": "1.0.2",
+  "version":"2.0.2",
   "data": [
     {
       "schema_version": "1.0.0",
       "id": "storm_rig_generator",
       "name": "STORM Rig Generator",
       "tagline": "Control rig for STORM armatures",
-      "version": "2.0.1",
+      "version": "2.0.2",
       "type": "add-on",
-      "archive_url": "https://github.com/ByAnonymus/STORM-Rig-Generator/releases/download/2.0.1/storm_rig_generator_2.0.1.zip",
+      "archive_url": "https://github.com/ByAnonymus/STORM-Rig-Generator/releases/download/2.0.2/storm_rig_generator_2.0.2.zip",
       "blender_version_min": "4.2.0",
       "maintainer": "ByAnon",
       "license": [
         "SPDX:GPL-3.0-or-later"
       ],
-      "archive_size": 311773,
-      "archive_hash":"sha256:e05ba8efb37cb29c0056172156ddd8d0cc8ae7fb5ad26393e1ab6fc43befd6bb"
+      "archive_size": 311955,
+      "archive_hash":"sha256:41e71da2e24b0dbb148a4508995e53e799c1eda38b22193b91f1cd226694e06c"
     }
   ]
 }

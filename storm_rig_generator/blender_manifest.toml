@@ -1,7 +1,7 @@
 schema_version = "1.0.1"
 
 id = "storm_rig_generator"
-version = "2.0.1"
+version = "2.0.2"
 
 name = "STORM Rig Generator"
 tagline = "Control rig for STORM armatures"
