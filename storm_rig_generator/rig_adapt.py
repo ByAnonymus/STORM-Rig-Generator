@@ -841,12 +841,22 @@ class STORM_Rig_Generator(bpy.types.Operator):
         context.active_object.select_set(True)
         mode(mode="POSE")
         # return {"FINISHED"}
-        
+        pose_bones["!thigh_ik.L"].lock_ik_z = True
+        pose_bones["!thigh_ik.R"].lock_ik_z = True
+
 
         bpy.ops.object.mode_set(mode="EDIT")
         for bone in bones:
             if not (bool(bones.get(bone.name.replace("!", ""))) or "Extras" in bone.collections):
                 bone.name = bone.name.replace("!", "")
+        length = edit_bones["foot_ik.L"].length
+        edit_bones["foot_ik.L"].tail.x =  edit_bones["foot_ik.L"].head.x
+        edit_bones["foot_ik.L"].length = length
+
+        length = edit_bones["foot_ik.R"].length
+        edit_bones["foot_ik.R"].tail.x =  edit_bones["foot_ik.R"].head.x
+        edit_bones["foot_ik.R"].length = length
+        
         # return {"FINISHED"}
         edit_bones["foot_heel_ik.L"].roll = -ang
         edit_bones["foot_ik.L"].roll = -ang
