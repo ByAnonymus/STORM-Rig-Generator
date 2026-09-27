@@ -7,15 +7,18 @@ class FaceGenerator(bpy.types.Operator):
     bl_description = "Description that shows in blender tooltips"
     bl_options = {"REGISTER", "UNDO"}
 
+
     @classmethod
     def poll(cls, context):
         return True
 
+
     def execute(self, context):
         arm = context.active_object
-        col = arm.data.collections["Face"]
+        col = arm.data.collections_all["Face"]
         self.fix_symmetry(arm)
         return {"FINISHED"}
+
 
     def fix_symmetry(self, arm):
         bones = arm.data.bones
@@ -39,8 +42,9 @@ class FaceGenerator(bpy.types.Operator):
                 "!lip14": "!lip_r06",
                 "!lip15": "!lip_l07",
                 "!lip16": "!lip_r07",} #lips
-        col = arm.data.collections["Face"]
+        col = arm.data.collections_all["Face"]
         arm.data.collections_all["ORG"].is_visible = True
+
 
         if bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]["is_storm1"]:
             for bone in bones:
@@ -52,9 +56,9 @@ class FaceGenerator(bpy.types.Operator):
             if bone.name.startswith("!"):
                 if bone.name[-3] == "l" and bone.name[-2::].isdigit():
                     bone.name = bone.name[:-3:]+bone.name[-2::]+".L"
-                    bone.select = True
+                    pose_bones[bone.name].select = True
                 elif bone.name.endswith("_l"):
-                    bone.select = True
+                    pose_bones[bone.name].select = True
                 elif bone.name[-3] == "r" and bone.name[-2::].isdigit():
                     if bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]["is_storm1"] and "eye" in bone.name:
                         bone.name = bone.name[:-3:]+str(storm1_dihh.get(bone.name[-2::]))+".R"
@@ -63,9 +67,9 @@ class FaceGenerator(bpy.types.Operator):
             elif bone.name.startswith("ORG-"):
                 if bone.name[-3] == "l" and bone.name[-2::].isdigit():
                     bone.name = bone.name[:-3:]+bone.name[-2::]+".L"
-                    bone.select = True
+                    pose_bones[bone.name].select = True
                 elif bone.name.endswith("_l"):
-                    bone.select = True
+                    pose_bones[bone.name].select = True
                 elif bone.name[-3] == "r" and bone.name[-2::].isdigit():
                     if bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]["is_storm1"] and "eye" in bone.name:
                         bone.name = bone.name[:-3:]+str(storm1_dihh.get(bone.name[-2::]))+".R"
@@ -74,11 +78,14 @@ class FaceGenerator(bpy.types.Operator):
         mode(mode="EDIT")
         bpy.ops.armature.symmetrize(direction='NEGATIVE_X')
         mode(mode="POSE")
-        
+
+
         # EYES and EYEBROWS
 
+
         # L
-        
+
+
         bpy.ops.pose.select_all(action="DESELECT")
         mode(mode="EDIT")
         eyeup = edit_bones["!eyeup_l"]  
@@ -93,17 +100,21 @@ class FaceGenerator(bpy.types.Operator):
         edit_bones["!eyedown_l"].parent = edit_bones["!OFFSET_eye_L"]
         edit_bones["!eye_l"].parent = edit_bones["!OFFSET_eye_L"]
 
+
         edit_bones["!OFFSET_eye_L"].head.x = edit_bones["!eye_03.L"].head.x+(edit_bones["!eye_04.L"].head.x - edit_bones["!eye_03.L"].head.x)*0.5
         edit_bones["!OFFSET_eye_L"].tail.x = edit_bones["!OFFSET_eye_L"].head.x
         edit_bones["!OFFSET_eye_L"].tail.z = edit_bones["!OFFSET_eye_L"].head.z
 
+
         edit_bones["!OFFSET_eye_L"].tail.y = edit_bones["!eye_01.L"].head.y - 0.01
         edit_bones["!OFFSET_eye_L"].head.y = edit_bones["!eye_01.L"].head.y - 0.015
+
 
         bpy.ops.armature.duplicate_move()
         mode(mode="POSE")
         bones["!OFFSET_eye_L.001"].name = "mayu_parent.L"
         mode(mode="EDIT")
+
 
         for i in range(1, 7):
             edit_bones[f"!mayu_0{i}.L"].parent = edit_bones["mayu_parent.L"]
@@ -113,6 +124,7 @@ class FaceGenerator(bpy.types.Operator):
         edit_bones["mayu_parent.L"].tail.x = edit_bones["!mayu_03.L"].head.x - (edit_bones["!mayu_03.L"].head.x - edit_bones["!mayu_04.L"].head.x)*0.5
         edit_bones["mayu_parent.L"].head.y = edit_bones["!mayu_03.L"].head.y
         edit_bones["mayu_parent.L"].tail.y = edit_bones["mayu_parent.L"].head.y+0.005
+
 
         mode(mode="POSE")
         bpy.ops.pose.select_all(action="DESELECT")
@@ -129,17 +141,21 @@ class FaceGenerator(bpy.types.Operator):
         edit_bones["!eyedown_r"].parent = edit_bones["!OFFSET_eye_R"]
         edit_bones["!eye_r"].parent = edit_bones["!OFFSET_eye_R"]
 
+
         edit_bones["!OFFSET_eye_R"].head.x = edit_bones["!eye_03.R"].head.x+(edit_bones["!eye_04.R"].head.x - edit_bones["!eye_03.R"].head.x)*0.5
         edit_bones["!OFFSET_eye_R"].tail.x = edit_bones["!OFFSET_eye_R"].head.x
         edit_bones["!OFFSET_eye_R"].tail.z = edit_bones["!OFFSET_eye_R"].head.z
 
+
         edit_bones["!OFFSET_eye_R"].tail.y = edit_bones["!eye_01.R"].head.y - 0.01
         edit_bones["!OFFSET_eye_R"].head.y = edit_bones["!eye_01.R"].head.y - 0.015
+
 
         bpy.ops.armature.duplicate_move()
         mode(mode="POSE")
         bones["!OFFSET_eye_R.001"].name = "mayu_parent.R"
         mode(mode="EDIT")
+
 
         for i in range(1, 7):
             edit_bones[f"!mayu_0{i}.R"].parent = edit_bones["mayu_parent.R"]
@@ -152,11 +168,16 @@ class FaceGenerator(bpy.types.Operator):
 
 
 
+
+
+
         # JAW/MOUTH
         mode(mode="POSE")
 
+
         bpy.ops.pose.select_all(action="DESELECT")
         mode(mode="EDIT")
+
 
         edit_bones["!lip_04.L"].select = True
         edit_bones["!lip_04.L"].select_head = True
@@ -170,6 +191,7 @@ class FaceGenerator(bpy.types.Operator):
         edit_bones[lip_control_name].tail.z += 0.01
         edit_bones[lip_control_name].tail.y = edit_bones[lip_control_name].head.y
 
+
         edit_bones[lip_control_name].name = "LIP_CTRL_TOP_L"
         if bool(edit_bones.get("!lip_04.L.002")):
             lip_control_name = "!lip_04.L.002"
@@ -177,6 +199,7 @@ class FaceGenerator(bpy.types.Operator):
             lip_control_name = "!lip_08.L"
         edit_bones[lip_control_name].tail.z += 0.01
         edit_bones[lip_control_name].tail.y = edit_bones[lip_control_name].head.y
+
 
         edit_bones[lip_control_name].parent = edit_bones["!kuti_down"]
         edit_bones[lip_control_name].name = "LIP_CTRL_UNDER_L"
@@ -188,7 +211,9 @@ class FaceGenerator(bpy.types.Operator):
         edit_bones["!lip_06.L"].parent = None
         edit_bones["!lip_07.L"].parent = None
 
+
         mode(mode="POSE")
+
 
         self.add_face_constraint("!lip_04.L", 0.75)
         self.add_face_constraint("!lip_03.L", 0.5)
@@ -198,9 +223,11 @@ class FaceGenerator(bpy.types.Operator):
         self.add_face_constraint("!lip_06.L", 0.25, subtarget1="LIP_CTRL_UNDER_L", subtarget2="!kuti_down")
         self.add_face_constraint("!lip_05.L", 0.1, subtarget1="LIP_CTRL_UNDER_L", subtarget2="!kuti_down")
 
+
         # OTHER SIDE
         bpy.ops.pose.select_all(action="DESELECT")
         mode(mode="EDIT")
+
 
         edit_bones["!lip_04.R"].select = True
         edit_bones["!lip_04.R"].select_head = True
@@ -213,7 +240,8 @@ class FaceGenerator(bpy.types.Operator):
             lip_control_name = "!lip_08.R"
         edit_bones[lip_control_name].tail.z += 0.01
         edit_bones[lip_control_name].tail.y = edit_bones[lip_control_name].head.y
-        
+
+
         edit_bones[lip_control_name].name = "LIP_CTRL_TOP_R"
         if bool(edit_bones.get("!lip_04.R.002")):
             lip_control_name = "!lip_04.R.002"
@@ -221,6 +249,7 @@ class FaceGenerator(bpy.types.Operator):
             lip_control_name = "!lip_08.R"
         edit_bones[lip_control_name].tail.z += 0.01
         edit_bones[lip_control_name].tail.y = edit_bones[lip_control_name].head.y
+
 
         edit_bones[lip_control_name].parent = edit_bones["!kuti_down"]
         edit_bones[lip_control_name].name = "LIP_CTRL_UNDER_R"
@@ -232,7 +261,9 @@ class FaceGenerator(bpy.types.Operator):
         edit_bones["!lip_06.R"].parent = None
         edit_bones["!lip_07.R"].parent = None
 
+
         mode(mode="POSE")
+
 
         self.add_face_constraint("!lip_04.R", 0.75, subtarget1="LIP_CTRL_TOP_R")
         self.add_face_constraint("!lip_03.R", 0.5, subtarget1="LIP_CTRL_TOP_R")
@@ -241,6 +272,8 @@ class FaceGenerator(bpy.types.Operator):
         self.add_face_constraint("!lip_07.R", 0.5, subtarget1="LIP_CTRL_UNDER_R", subtarget2="!kuti_down")
         self.add_face_constraint("!lip_06.R", 0.25, subtarget1="LIP_CTRL_UNDER_R", subtarget2="!kuti_down")
         self.add_face_constraint("!lip_05.R", 0.1, subtarget1="LIP_CTRL_UNDER_R", subtarget2="!kuti_down")
+
+
 
 
         # JAW
@@ -260,18 +293,22 @@ class FaceGenerator(bpy.types.Operator):
         edit_bones["!kuti_down"].select_tail = True
         bpy.ops.armature.duplicate_move()
 
+
         edit_bones["!kuti_down.001"].name = "JAW_CTRL"
         edit_bones["!kuti_down"].parent = edit_bones["JAW_CTRL"]
+
 
         edit_bones["JAW_TARGET"].head.z = edit_bones["!lip_c00"].head.z - (edit_bones["!nose"].head.z -edit_bones["!lip_c00"].head.z)
         edit_bones["JAW_TARGET"].head.y = edit_bones["!lip_03.L"].head.y
         edit_bones["JAW_TARGET"].tail.z = edit_bones["JAW_TARGET"].head.z
         edit_bones["JAW_TARGET"].tail.y = edit_bones["JAW_TARGET"].head.y + 0.01
 
+
         edit_bones["JAW_CTRL"].tail.y = edit_bones["JAW_TARGET"].head.y
         edit_bones["JAW_CTRL"].tail.z = edit_bones["JAW_TARGET"].head.z
         edit_bones["JAW_CTRL"].tail.x = edit_bones["JAW_TARGET"].head.x
         edit_bones["JAW_CTRL"].roll = edit_bones["JAW_TARGET"].roll
+
 
         mode(mode="POSE")
         constraint = pose_bones["JAW_CTRL"].constraints.new("DAMPED_TRACK")
@@ -287,11 +324,13 @@ class FaceGenerator(bpy.types.Operator):
         constraint.target_space = "LOCAL"
         constraint.owner_space = "LOCAL"
 
+
         # FACE BONES
         bpy.ops.pose.select_all(action="DESELECT")
         mode(mode="EDIT")
         edit_bones["!face01"].parent = edit_bones["!face02"].parent
         edit_bones["!face03"].parent = edit_bones["!face02"].parent
+
 
         edit_bones["!face01"].select = True
         edit_bones["!face01"].select_head = True
@@ -307,15 +346,21 @@ class FaceGenerator(bpy.types.Operator):
         edit_bones["!face02.001"].name = "!face02_CTRL"
         edit_bones["!face03.001"].name = "!face03_CTRL"
 
+
         edit_bones["!face01"].parent = edit_bones["!face01_CTRL"]
         edit_bones["!face02"].parent = edit_bones["!face02_CTRL"]
         edit_bones["!face03"].parent = edit_bones["!face03_CTRL"]
 
+
         edit_bones["!face01_CTRL"].tail.y = edit_bones["!face01_CTRL"].head.y + (edit_bones["!face01_CTRL"].head.y - edit_bones["!OFFSET_eye_L"].head.y) * 0.5
+
 
         edit_bones["!face02_CTRL"].tail.y = edit_bones["!face02_CTRL"].head.y + (edit_bones["!face02_CTRL"].head.y - edit_bones["!OFFSET_eye_L"].head.y) * 0.5
 
+
         edit_bones["!face03_CTRL"].tail.y = edit_bones["!face03_CTRL"].head.y + (edit_bones["!face03_CTRL"].head.y - edit_bones["!OFFSET_eye_L"].head.y) * 0.5
+
+
 
 
         mode(mode="POSE")
@@ -325,41 +370,51 @@ class FaceGenerator(bpy.types.Operator):
         pose_bones["!face03_CTRL"].custom_shape_scale_xyz = [4,4,1.5]
         pose_bones["!face03_CTRL"].custom_shape_translation[2] = -0.035
 
+
         # EYE CONTROL
         bpy.ops.pose.select_all(action="DESELECT")
         mode(mode="EDIT")
+
 
         edit_bones["!OFFSET_eye_L"].select = True
         edit_bones["!OFFSET_eye_L"].select_head = True
         edit_bones["!OFFSET_eye_L"].select_tail = True
         bpy.ops.armature.duplicate_move()
 
+
         edit_bones["!OFFSET_eye_L.001"].name = "EYE_CTRL_L"
         edit_bones["EYE_CTRL_L"].head.y-= 0.07
         edit_bones["EYE_CTRL_L"].tail.y -= 0.07
         edit_bones["EYE_CTRL_L"].length *= 5
-        
-        
-        
+
+
+
+
+
+
         bpy.context.view_layer.objects.active = bpy.data.objects[bpy.data.objects[bpy.context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"]
         for i in range(1, 5):
             bpy.context.active_object.material_slots[0].material.node_tree.driver_remove(f"nodes[\"uvOffset0\"].inputs[{i}].default_value")
-        
+
+
         bpy.context.view_layer.objects.active = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
         mode(mode="POSE")
         bpy.ops.pose.select_all(action="DESELECT")
         mode(mode="EDIT")
+
 
         edit_bones["!OFFSET_eye_R"].select = True
         edit_bones["!OFFSET_eye_R"].select_head = True
         edit_bones["!OFFSET_eye_R"].select_tail = True
         bpy.ops.armature.duplicate_move()
 
+
         edit_bones["!OFFSET_eye_R.001"].name = "EYE_CTRL_R"
         edit_bones["EYE_CTRL_R"].head.y-= 0.07
         edit_bones["EYE_CTRL_R"].tail.y -= 0.07
         edit_bones["EYE_CTRL_R"].length *= 5
-        
+
+
         mode(mode="POSE")
         bpy.ops.pose.select_all(action="DESELECT")
         mode(mode="EDIT")
@@ -368,37 +423,49 @@ class FaceGenerator(bpy.types.Operator):
         edit_bones["EYE_CTRL_R"].select_tail = True
         bpy.ops.armature.duplicate_move()
 
+
         edit_bones["EYE_CTRL_R.001"].name = "EYE_CTRL_PARENT"
         edit_bones["EYE_CTRL_R"].parent = edit_bones["EYE_CTRL_PARENT"]
         edit_bones["EYE_CTRL_L"].parent = edit_bones["EYE_CTRL_PARENT"]
         mode(mode="OBJECT")
-        
+
+
         bpy.data.objects[bpy.context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"
-        
-        
+
+
+
+
         bpy.context.view_layer.objects.active = bpy.data.objects[bpy.data.objects[bpy.context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"]
         for i in range(1, 5):
             bpy.context.active_object.material_slots[0].material.node_tree.driver_remove(f"nodes[\"uvOffset0\"].inputs[{i}].default_value")
-        
+
+
         bpy.context.view_layer.objects.active = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
         mode(mode="EDIT")
         edit_bones["EYE_CTRL_PARENT"].head.x += (edit_bones["EYE_CTRL_L"].head.x-edit_bones["EYE_CTRL_PARENT"].head.x)*.5
         edit_bones["EYE_CTRL_PARENT"].tail.x = edit_bones["EYE_CTRL_PARENT"].head.x
         edit_bones["EYE_CTRL_PARENT"].length*=4.5
         bpy.context.view_layer.objects.active = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
-        
+
+
+
 
         mode(mode="OBJECT")
-        
+
+
         bpy.data.objects[bpy.context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"
-        
-        
+
+
+
+
         bpy.context.view_layer.objects.active = bpy.data.objects[bpy.data.objects[bpy.context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"]
         for i in range(1, 5):
             bpy.context.active_object.material_slots[0].material.node_tree.driver_remove(f"nodes[\"uvOffset0\"].inputs[{i}].default_value")
-        
+
+
         bpy.context.view_layer.objects.active = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
         mode(mode="POSE")
+
 
         # FACE COLLECTION
         for i in range(1, 10):
@@ -420,6 +487,7 @@ class FaceGenerator(bpy.types.Operator):
         for i in range(1,5):
             self.add_to_col_exclusive(bones[f"!tongue0{i}"], col)
 
+
         self.add_to_col_exclusive(bones[f"!lip_c00"], col)
         self.add_to_col_exclusive(bones[f"!lip_c10"], col)
         self.add_to_col_exclusive(bones[f"JAW_TARGET"], col)
@@ -428,46 +496,57 @@ class FaceGenerator(bpy.types.Operator):
         self.add_to_col_exclusive(bones["!face02_CTRL"], col)
         self.add_to_col_exclusive(bones["!face03_CTRL"], col)
 
+
         self.add_to_col_exclusive(bones["!nose"], col)
         self.add_to_col_exclusive(bones["!jaw"], col)
         self.add_to_col_exclusive(bones["!upper teeth"], col)
         self.add_to_col_exclusive(bones["!lower teeth"], col)
         self.add_to_col_exclusive(bones["!kuti_up"], col)
         self.add_to_col_exclusive(bones["!kuti_down"], col)
-        
+
+
         self.add_to_col_exclusive(bones["!eyedown_l"], col)
         self.add_to_col_exclusive(bones["!eyeup_l"], col)
         self.add_to_col_exclusive(bones["!eyedown_r"], col)
         self.add_to_col_exclusive(bones["!eyeup_r"], col)
 
-        self.add_to_col_exclusive(bones["JAW_CTRL"], arm.data.collections["ORG"])
+
+        self.add_to_col_exclusive(bones["JAW_CTRL"], arm.data.collections_all["ORG"])
+
 
         pose_bones["LIP_CTRL_TOP_L"].custom_shape_translation[1] = 0.001
         pose_bones["LIP_CTRL_UNDER_L"].custom_shape_translation[1] = -0.001
         pose_bones["LIP_CTRL_TOP_R"].custom_shape_translation[1] = 0.001
         pose_bones["LIP_CTRL_UNDER_R"].custom_shape_translation[1] = -0.001
 
+
         pose_bones["EYE_CTRL_PARENT"].custom_shape_scale_xyz[1] = 0.4
         pose_bones["EYE_CTRL_PARENT"].custom_shape_scale_xyz[2] = 0.4
+
 
         pose_bones["EYE_CTRL_R"].custom_shape = pose_bones["neck.001"].custom_shape
         pose_bones["EYE_CTRL_L"].custom_shape = pose_bones["neck.001"].custom_shape
 
+
         pose_bones["!OFFSET_eye_L"].custom_shape = pose_bones["neck.001"].custom_shape
         pose_bones["!OFFSET_eye_R"].custom_shape = pose_bones["neck.001"].custom_shape
 
+
         pose_bones["EYE_CTRL_R"].custom_shape_translation[1] = -0.01
         pose_bones["EYE_CTRL_L"].custom_shape_translation[1] = -0.01
+
 
         pose_bones["!OFFSET_eye_L"].custom_shape_scale_xyz[0] = 6
         pose_bones["!OFFSET_eye_R"].custom_shape_scale_xyz[0] = 6
         pose_bones["!OFFSET_eye_L"].custom_shape_scale_xyz[2] = 6
         pose_bones["!OFFSET_eye_R"].custom_shape_scale_xyz[2] = 6
 
+
         pose_bones["mayu_parent.L"].custom_shape_scale_xyz[0] = 12
         pose_bones["mayu_parent.L"].custom_shape_scale_xyz[1] = 2
         pose_bones["mayu_parent.L"].custom_shape_scale_xyz[2] = 2
         pose_bones["mayu_parent.L"].custom_shape_rotation_euler[1] = math.radians(-10)
+
 
         with bpy.data.libraries.load(f"{path}/blender/geo_node.blend") as (data_from, data_to):
             data_to.node_groups = data_from.node_groups
@@ -476,40 +555,46 @@ class FaceGenerator(bpy.types.Operator):
         obj_l = bpy.data.objects["EYE_CTRL_L"]
         obj_r = bpy.data.objects["EYE_CTRL_R"]
 
+
         obj_l.name += "_" + bpy.context.scene.byanon_active_storm_rig.name
         obj_r.name += "_" + bpy.context.scene.byanon_active_storm_rig.name
+
 
         obj_l.constraints["COPY_PARENT"].target = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
         obj_l.constraints["COPY_PARENT"].subtarget = "EYE_CTRL_PARENT"
         obj_l.constraints["COPY_L"].target = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
         obj_l.constraints["COPY_L"].subtarget = "EYE_CTRL_L"
 
+
         obj_r.constraints["COPY_PARENT"].target = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
         obj_r.constraints["COPY_PARENT"].subtarget = "EYE_CTRL_PARENT"
         obj_r.constraints["COPY_R"].target = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
         obj_r.constraints["COPY_R"].subtarget = "EYE_CTRL_R"
 
+
         obj_name = bpy.data.objects[bpy.context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"
         bpy.context.view_layer.objects.active = bpy.data.objects[obj_name]
-        
+
+
         mod = bpy.data.objects[obj_name].modifiers.new(name = "GEO NODE", type='NODES')
         mod.node_group = bpy.data.node_groups["EYE_L"]
         material = bpy.context.active_object.material_slots[0].material
         nodes = material.node_tree.nodes
         links = material.node_tree.links
 
-        nodes.new("ShaderNodeAttribute")
-        node = nodes["Attribute"]
+
+        node = nodes.new("ShaderNodeAttribute")
         node.name = "eye_empty_x"
         node.attribute_name = "eye_empty_x"
+
 
         if nodes.get("uvOffset0"):
             links.new(node.outputs["Vector"], nodes["uvOffset0"].inputs[1])
         if nodes.get("uvOffset1"):
             links.new(node.outputs["Vector"], nodes["uvOffset1"].inputs[1])
 
-        nodes.new("ShaderNodeAttribute")
-        node = nodes["Attribute"]
+
+        node = nodes.new("ShaderNodeAttribute")
         node.name = "eye_empty_y"
         node.attribute_name = "eye_empty_y"
         if nodes.get("uvOffset0"):
@@ -517,35 +602,44 @@ class FaceGenerator(bpy.types.Operator):
         if nodes.get("uvOffset1"):
             links.new(node.outputs["Vector"], nodes["uvOffset1"].inputs[2])
 
+
         obj_name = bpy.data.objects[bpy.context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"
         bpy.context.view_layer.objects.active = bpy.data.objects[obj_name]
         mod = bpy.data.objects[obj_name].modifiers.new(name = "GEO NODE", type='NODES')
         mod.node_group = bpy.data.node_groups["EYE_R"]
-        
+
+
         material = bpy.context.active_object.material_slots[0].material
         nodes = material.node_tree.nodes
         links = material.node_tree.links
 
-        nodes.new("ShaderNodeAttribute")
-        node = nodes["Attribute"]
+
+        node = nodes.new("ShaderNodeAttribute")
         node.name = "eye_empty_x"
         node.attribute_name = "eye_empty_x"
 
-        links.new(node.outputs["Vector"], nodes["uvOffset0"].inputs[1])
 
-        nodes.new("ShaderNodeAttribute")
-        node = nodes["Attribute"]
+        if nodes.get("uvOffset0"):
+            links.new(node.outputs["Vector"], nodes["uvOffset0"].inputs[1])
+        if nodes.get("uvOffset1"):
+            links.new(node.outputs["Vector"], nodes["uvOffset1"].inputs[1])
+
+
+        node = nodes.new("ShaderNodeAttribute")
         node.name = "eye_empty_y"
         node.attribute_name = "eye_empty_y"
-
-        links.new(node.outputs["Vector"], nodes["uvOffset0"].inputs[2])
+        if nodes.get("uvOffset0"):
+            links.new(node.outputs["Vector"], nodes["uvOffset0"].inputs[2])
+        if nodes.get("uvOffset1"):
+            links.new(node.outputs["Vector"], nodes["uvOffset1"].inputs[2])
 
 
         bpy.context.view_layer.objects.active = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
         mode(mode="POSE")
         arm.data.collections_all["ORG"].is_visible = False
     def add_to_col_exclusive(self,bone,col):
-        bone.collections.clear()
+        for collection in tuple(bone.collections):
+            collection.unassign(bone)
         col.assign(bone)
     def add_face_constraint(self, bone_name, inf, subtarget1="LIP_CTRL_TOP_L", subtarget2="!kuti_up"):
         pose_bones = bpy.context.active_object.pose.bones
@@ -570,15 +664,18 @@ class FaceGenerator(bpy.types.Operator):
     #         else:
     #             driver.expression = f"{def_value}+(child+parent)*2"
 
+
     #         var = driver.variables.new()
     #         var.name = "child"
     #         var.targets[0].id = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
     #         var.targets[0].data_path = f'pose.bones["EYE_CTRL_{side}"].location[{location}]'
 
+
     #         var = driver.variables.new()
     #         var.name = "parent"
     #         var.targets[0].id = bpy.data.objects[bpy.context.scene.byanon_active_storm_rig.name]
     #         var.targets[0].data_path = f'pose.bones["EYE_CTRL_PARENT"].location[{location}]'
+
 
 class BakeEyes(bpy.types.Operator):
     bl_idname = "byanon.bake_eyes"
@@ -591,6 +688,7 @@ class BakeEyes(bpy.types.Operator):
     )
     def invoke(self, context, event):
         return context.window_manager.invoke_props_dialog(self)
+
 
     def execute(self, context):
         i = 0
@@ -620,7 +718,8 @@ class BakeEyes(bpy.types.Operator):
                     obj_name = bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"
                 else:
                     obj_name = bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"
-                
+
+
                 def material_bullshit(obj_name):
                     context.view_layer.objects.active = bpy.data.objects[obj_name]
                     obj = bpy.context.object.evaluated_get(bpy.context.evaluated_depsgraph_get()).data
@@ -641,7 +740,7 @@ class BakeEyes(bpy.types.Operator):
                 material_bullshit(obj_name)
                 mode(mode='POSE')
                 bpy.ops.pose.select_all(action="DESELECT")
-                pose_bones["EYE_CTRL_PARENT"].bone.select = True
+                pose_bones["EYE_CTRL_PARENT"].select = True
                 last_frame = context.scene.frame_current
                 bpy.ops.screen.keyframe_jump(next=True)
                 while context.scene.frame_current != last_frame:
@@ -650,7 +749,7 @@ class BakeEyes(bpy.types.Operator):
                     bpy.ops.screen.keyframe_jump(next=True)
                 if mat.material.name.endswith("_l"):
                     bpy.ops.pose.select_all(action="DESELECT")
-                    pose_bones["EYE_CTRL_L"].bone.select = True
+                    pose_bones["EYE_CTRL_L"].select = True
                     last_frame = context.scene.frame_current
                     bpy.ops.screen.keyframe_jump(next=True)
                     while context.scene.frame_current != last_frame:
@@ -659,11 +758,11 @@ class BakeEyes(bpy.types.Operator):
                         bpy.ops.screen.keyframe_jump(next=True)
                 else:
                     bpy.ops.pose.select_all(action="DESELECT")
-                    pose_bones["EYE_CTRL_PARENT"].bone.select = True
+                    pose_bones["EYE_CTRL_PARENT"].select = True
                     last_frame = context.scene.frame_current
                     bpy.ops.screen.keyframe_jump(next=True)
                     while context.scene.frame_current != last_frame:
-                        material_bullshit()
+                        material_bullshit(obj_name)
                         last_frame = context.scene.frame_current
                         bpy.ops.screen.keyframe_jump(next=True)
                 if mat.material.name.endswith("_l"):
@@ -684,6 +783,7 @@ class BakeEyes(bpy.types.Operator):
             mat.material = bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"].material_slots[0].material
             mat.name = slot_name+"::"+mat.material.name
 
+
             bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"].material_slots[0].material.node_tree.nodes["SceneUVoffset0"].attribute_name = f"xfbin_scene.xfbin_materials[\"{mat.name}\"].uvOffset0"
             bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"].material_slots[0].material.node_tree.nodes["SceneUVscale0"].attribute_name = f"xfbin_scene.xfbin_materials[\"{mat.name}\"].uvScale0"
             bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_l"].material_slots[0].material.node_tree.nodes["SceneUVoffset1"].attribute_name = f"xfbin_scene.xfbin_materials[\"{mat.name}\"].uvOffset1"
@@ -696,15 +796,20 @@ class BakeEyes(bpy.types.Operator):
             mat.material = bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"].material_slots[0].material
             mat.name = slot_name+"::"+mat.material.name
 
+
             bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"].material_slots[0].material.node_tree.nodes["SceneUVoffset0"].attribute_name = f"xfbin_scene.xfbin_materials[\"{mat.name}\"].uvOffset0"
             bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"].material_slots[0].material.node_tree.nodes["SceneUVscale0"].attribute_name = f"xfbin_scene.xfbin_materials[\"{mat.name}\"].uvScale0"
             bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"].material_slots[0].material.node_tree.nodes["SceneUVoffset1"].attribute_name = f"xfbin_scene.xfbin_materials[\"{mat.name}\"].uvOffset1"
             bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"].material_slots[0].material.node_tree.nodes["SceneUVscale1"].attribute_name = f"xfbin_scene.xfbin_materials[\"{mat.name}\"].uvScale1"
             bpy.data.objects[bpy.data.objects[context.scene.byanon_active_storm_armature.name].pose.bones["pelvis"].parent.name+" eye_r"].material_slots[0].material.node_tree.nodes["SceneBlendRate"].attribute_name = f"xfbin_scene.xfbin_materials[\"{mat.name}\"].blendRate"
 
-            
+
+
+
         self.execute(context)
         return {"FINISHED"}
+
+
 
 
 classes = [FaceGenerator, BakeEyes]
