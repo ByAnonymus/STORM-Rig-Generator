@@ -10,7 +10,7 @@
       "version": "2.0.3",
       "type": "add-on",
       "archive_url": "https://github.com/ByAnonymus/STORM-Rig-Generator/releases/download/2.0.3/storm_rig_generator_2.0.3.zip",
-      "blender_version_min": "5.0.0",
+      "blender_version_min": "4.2.0",
       "maintainer": "ByAnon",
       "license": [
         "SPDX:GPL-3.0-or-later"
