@@ -3,6 +3,20 @@ from pathlib import Path
 from .rig_adapt_spine import copy_bone_props
 from .physics import physics_generate
 mode = bpy.ops.object.mode_set
+
+def _pose_bone_state_owner(pose_bone):
+    """Selection and pose visibility moved from Bone to PoseBone in Blender 5.0."""
+    return pose_bone if bpy.app.version >= (5, 0, 0) else pose_bone.bone
+
+def set_pose_bone_selected(pose_bone, selected):
+    _pose_bone_state_owner(pose_bone).select = selected
+
+def is_pose_bone_selected(pose_bone):
+    return _pose_bone_state_owner(pose_bone).select
+
+def set_pose_bone_hidden(pose_bone, hidden):
+    _pose_bone_state_owner(pose_bone).hide = hidden
+
 def isolate(context: bpy.types.Context, object):
     [obj.select_set(False) for obj in bpy.data.objects]
     object.select_set(True)
@@ -28,7 +42,7 @@ def set_parents():
             if i.layers[0]:
                 bone_names.append(i.name)
         else:
-            if i in bpy.context.active_object.data.collections["underlying"].bones_recursive:
+            if i in bpy.context.active_object.data.collections_all["underlying"].bones_recursive:
                 bone_names.append(i.name)
     bpy.ops.object.mode_set(mode='EDIT')
     unparented = []
@@ -141,10 +155,10 @@ class STORM_Adapt_Operator(bpy.types.Operator):
         context.view_layer.objects.active = old_obj
         bpy.ops.object.mode_set(mode="POSE")
         for bone in context.active_object.pose.bones:
-            bone.select = True
+            set_pose_bone_selected(bone, True)
         bpy.ops.transform.bbone_resize(value=(.01, .01, .01))
         for bone in context.active_object.pose.bones:
-            bone.select = False
+            set_pose_bone_selected(bone, False)
         mode(mode='EDIT')
         for bone in context.active_object.data.edit_bones:
             bone.length = 0.001
@@ -258,26 +272,26 @@ class STORM_Rig_Generator(bpy.types.Operator):
         # ARMS
         ###############################
 
-        pose_bones["upperarm.L"].select = True
-        pose_bones["forearm.L"].select = True
-        pose_bones["hand.L"].select = True
+        set_pose_bone_selected(pose_bones["upperarm.L"], True)
+        set_pose_bone_selected(pose_bones["forearm.L"], True)
+        set_pose_bone_selected(pose_bones["hand.L"], True)
         bpy.ops.bfl_byanon.makearm(isLeft=True)
         bpy.ops.bfl_byanon.adjustroll(roll=90)
 
 
-        pose_bones["upperarm.L"].select = False
-        pose_bones["forearm.L"].select = False
-        pose_bones["hand.L"].select = False
+        set_pose_bone_selected(pose_bones["upperarm.L"], False)
+        set_pose_bone_selected(pose_bones["forearm.L"], False)
+        set_pose_bone_selected(pose_bones["hand.L"], False)
 
-        pose_bones["upperarm.R"].select = True
-        pose_bones["forearm.R"].select = True
-        pose_bones["hand.R"].select = True
+        set_pose_bone_selected(pose_bones["upperarm.R"], True)
+        set_pose_bone_selected(pose_bones["forearm.R"], True)
+        set_pose_bone_selected(pose_bones["hand.R"], True)
         bpy.ops.bfl_byanon.makearm(isLeft=False)
         bpy.ops.bfl_byanon.adjustroll(roll=-90)
 
-        pose_bones["upperarm.R"].select = False
-        pose_bones["forearm.R"].select = False
-        pose_bones["hand.R"].select = False
+        set_pose_bone_selected(pose_bones["upperarm.R"], False)
+        set_pose_bone_selected(pose_bones["forearm.R"], False)
+        set_pose_bone_selected(pose_bones["hand.R"], False)
 
         bpy.ops.object.mode_set(mode="EDIT")
 
@@ -298,7 +312,7 @@ class STORM_Rig_Generator(bpy.types.Operator):
                 name = f"finger{i}"
                 if j != 0:
                     name+=str(j)
-                pose_bones[f"{name}.L"].select = True
+                set_pose_bone_selected(pose_bones[f"{name}.L"], True)
 
         bpy.ops.bfl_byanon.makefingers(isLeft=True)
         bpy.ops.bfl_byanon.adjustroll(roll=180)
@@ -311,14 +325,14 @@ class STORM_Rig_Generator(bpy.types.Operator):
         bpy.ops.object.mode_set(mode="POSE")
 
         for bone in pose_bones:
-            if bone.select:
-                bone.select = False
+            if is_pose_bone_selected(bone):
+                set_pose_bone_selected(bone, False)
         for i in range(5):
             for j in range(3):
                 name = f"finger{i}"
                 if j != 0:
                     name+=str(j)
-                pose_bones[f"{name}.R"].select = True
+                set_pose_bone_selected(pose_bones[f"{name}.R"], True)
 
         bpy.ops.bfl_byanon.makefingers(isLeft=False)
         bpy.ops.object.mode_set(mode="EDIT")
@@ -329,17 +343,17 @@ class STORM_Rig_Generator(bpy.types.Operator):
         bpy.ops.object.mode_set(mode="POSE")
 
         for bone in pose_bones:
-            if bone.select:
-                bone.select = False
+            if is_pose_bone_selected(bone):
+                set_pose_bone_selected(bone, False)
 
         ###############################
         # LEGS
         ###############################
 
-        pose_bones["thigh.L"].select = True
-        pose_bones["calf.L"].select = True
-        pose_bones["foot.L"].select = True
-        pose_bones["toe0.L"].select = True
+        set_pose_bone_selected(pose_bones["thigh.L"], True)
+        set_pose_bone_selected(pose_bones["calf.L"], True)
+        set_pose_bone_selected(pose_bones["foot.L"], True)
+        set_pose_bone_selected(pose_bones["toe0.L"], True)
 
         bpy.ops.bfl_byanon.makeleg(isLeft=True)
 
@@ -402,10 +416,10 @@ class STORM_Rig_Generator(bpy.types.Operator):
         bpy.ops.object.mode_set(mode="POSE")
 
 
-        pose_bones["thigh.R"].select = True
-        pose_bones["calf.R"].select = True
-        pose_bones["foot.R"].select = True
-        pose_bones["toe0.R"].select = True
+        set_pose_bone_selected(pose_bones["thigh.R"], True)
+        set_pose_bone_selected(pose_bones["calf.R"], True)
+        set_pose_bone_selected(pose_bones["foot.R"], True)
+        set_pose_bone_selected(pose_bones["toe0.R"], True)
 
         bpy.ops.bfl_byanon.makeleg(isLeft=False)
 
@@ -474,9 +488,9 @@ class STORM_Rig_Generator(bpy.types.Operator):
   
 
         bpy.ops.object.mode_set(mode="POSE")
-        pose_bones["pelvis"].select = True
-        pose_bones["spine"].select = True
-        pose_bones["spine1"].select = True
+        set_pose_bone_selected(pose_bones["pelvis"], True)
+        set_pose_bone_selected(pose_bones["spine"], True)
+        set_pose_bone_selected(pose_bones["spine1"], True)
 
         print(context.selected_pose_bones)
         bpy.ops.bfl_byanon.makespine()
@@ -507,8 +521,8 @@ class STORM_Rig_Generator(bpy.types.Operator):
 
         bpy.ops.object.mode_set(mode="POSE")
 
-        pose_bones["neck"].select = True
-        pose_bones["head"].select = True
+        set_pose_bone_selected(pose_bones["neck"], True)
+        set_pose_bone_selected(pose_bones["head"], True)
         bpy.ops.bfl_byanon.makeneck()
 
         bpy.ops.object.mode_set(mode="EDIT")
@@ -520,26 +534,26 @@ class STORM_Rig_Generator(bpy.types.Operator):
 
 
         bpy.ops.object.mode_set(mode="POSE")
-        pose_bones["neck"].select = False
-        pose_bones["head"].select = False
+        set_pose_bone_selected(pose_bones["neck"], False)
+        set_pose_bone_selected(pose_bones["head"], False)
         
-        pose_bones["clavicle.L"].select = True
+        set_pose_bone_selected(pose_bones["clavicle.L"], True)
         bones.active = bones["clavicle.L"]
         bpy.ops.bfl_byanon.makeshoulder(isLeft=True)
         bones.active = None
-        pose_bones["clavicle.L"].select = False
+        set_pose_bone_selected(pose_bones["clavicle.L"], False)
 
         bpy.ops.object.mode_set(mode="EDIT")
         edit_bones["clavicle.L"].tail = edit_bones["upperarm.L"].head
 
         bpy.ops.object.mode_set(mode="POSE")
         
-        pose_bones["clavicle.R"].select = True
+        set_pose_bone_selected(pose_bones["clavicle.R"], True)
         bones.active = bones["clavicle.R"]
         bpy.ops.bfl_byanon.makeshoulder(isLeft=False)
 
         bones.active = None
-        pose_bones["clavicle.R"].select = False
+        set_pose_bone_selected(pose_bones["clavicle.R"], False)
 
 
         bpy.ops.object.mode_set(mode="EDIT")
@@ -605,28 +619,28 @@ class STORM_Rig_Generator(bpy.types.Operator):
             bone.select_tail = False
             bone.select = False
         bpy.ops.object.mode_set(mode="POSE")
-        pose_bones["upperarm.R"].select = True
-        pose_bones["forearm.R"].select = True
-        pose_bones["hand.R"].select = True
+        set_pose_bone_selected(pose_bones["upperarm.R"], True)
+        set_pose_bone_selected(pose_bones["forearm.R"], True)
+        set_pose_bone_selected(pose_bones["hand.R"], True)
         bpy.ops.bfl_byanon.makearm(isLeft=False)
 
-        pose_bones["upperarm.R"].select = False
-        pose_bones["forearm.R"].select = False
-        pose_bones["hand.R"].select = False
+        set_pose_bone_selected(pose_bones["upperarm.R"], False)
+        set_pose_bone_selected(pose_bones["forearm.R"], False)
+        set_pose_bone_selected(pose_bones["hand.R"], False)
 
-        pose_bones["thigh.R"].select = True
-        pose_bones["calf.R"].select = True
-        pose_bones["foot.R"].select = True
-        pose_bones["toe0.R"].select = True
+        set_pose_bone_selected(pose_bones["thigh.R"], True)
+        set_pose_bone_selected(pose_bones["calf.R"], True)
+        set_pose_bone_selected(pose_bones["foot.R"], True)
+        set_pose_bone_selected(pose_bones["toe0.R"], True)
         bpy.ops.bfl_byanon.makeleg(isLeft=False)
 
         for bone in pose_bones:
-            bone.select = False
-        pose_bones["clavicle.R"].select = True
+            set_pose_bone_selected(bone, False)
+        set_pose_bone_selected(pose_bones["clavicle.R"], True)
         bones.active = bones["clavicle.R"]
         bpy.ops.bfl_byanon.makeshoulder(isLeft=False)
         bones.active = None
-        pose_bones["clavicle.R"].select = False
+        set_pose_bone_selected(pose_bones["clavicle.R"], False)
         new_obj = bpy.data.objects[context.scene.byanon_active_storm_armature.name].copy()
         new_armature = new_obj.data.copy()
         new_obj.data = new_armature
@@ -1074,7 +1088,10 @@ class STORM_Rig_Generator(bpy.types.Operator):
             if ("MCH" not in bone.name):
                 print("bone_to_remove_connect: ", bone.name)
                 edit_bones[bone.name].use_connect = False
-
+        for bone in bones:
+            if bone.name.startswith("ORG-") and pose_bones[bone.name].constraints.get("Copy Transforms"):
+                if pose_bones[bone.name].constraints["Copy Transforms"].subtarget == bone.name.replace("ORG-", "!"):
+                    pose_bones[bone.name].constraints.remove(pose_bones[bone.name].constraints["Copy Transforms"])
         bpy.ops.object.mode_set(mode="POSE")
         for bone in pose_bones:
             bone.lock_scale[0] = False
@@ -1614,8 +1631,8 @@ class STORM_Rig_Generator(bpy.types.Operator):
         edit_bones["root_dupe"].parent = edit_bones["MCH-root_pivot"]
 
         mode(mode='POSE')
-        pose_bones["root_dupe"].hide = True
-        pose_bones["MCH-root_pivot"].hide = True
+        set_pose_bone_hidden(pose_bones["root_dupe"], True)
+        set_pose_bone_hidden(pose_bones["MCH-root_pivot"], True)
         con =pose_bones["MCH-root_pivot"].constraints.new('COPY_LOCATION')
         con.target = context.active_object
         con.subtarget = "root_pivot"
@@ -1720,14 +1737,14 @@ class STORM_Rig_Generator(bpy.types.Operator):
             isolate(context,obj_rigify)
             for bone in bones:
                 if "Deform Bones" in bone.collections:
-                    obj_rigify.data.collections["DEF"].assign(bone)
+                    obj_rigify.data.collections_all["DEF"].assign(bone)
                 elif "Original Bones" in bone.collections:
                     obj_rigify.data.collections_all["ORG"].assign(bone)
                 elif "Mechanism Bones" in bone.collections:
                     obj_rigify.data.collections_all["MCH"].assign(bone)
             def remove_collection(collection_name):
-                if collection_name in obj_rigify.data.collections:
-                    collection = obj_rigify.data.collections[collection_name]
+                if collection_name in obj_rigify.data.collections_all:
+                    collection = obj_rigify.data.collections_all[collection_name]
                     obj_rigify.data.collections.remove(collection)
             remove_collection("Deform Bones")
             remove_collection("Deform Bones")
