@@ -8,4 +8,4 @@ Credits: HisAnimations for Rigi-All, which this addon is based on. https://githu
 
 INSTALL BY ADDING A NEW REMOTE REPOSITORY IN THE GET EXTENSIONS TAB
 
-The URL: [https://raw.githubusercontent.com/ByAnonymus/STORM-Rig-Generator/main/index.json](https://raw.githubusercontent.com/ByAnonymus/STORM-Rig-Generator/main/storm_rig_generator/index.json)
+The URL: [https://raw.githubusercontent.com/ByAnonymus/STORM-Rig-Generator/main/storm_rig_generator/index.json](https://raw.githubusercontent.com/ByAnonymus/STORM-Rig-Generator/main/storm_rig_generator/index.json)
